@@ -1,3 +1,0 @@
-"C:\Program Files\JetBrains\CLion 2024.2.2\bin\cmake\win\x64\bin\cmake.exe" -E rm -f CMakeFiles\Projet_quoridor.dir/objects.a
-C:\PROGRA~1\JETBRA~1\CLION2~1.3\bin\mingw_2\bin\ar.exe qc CMakeFiles\Projet_quoridor.dir/objects.a @CMakeFiles\Projet_quoridor.dir\objects1.rsp
-C:\PROGRA~1\JETBRA~1\CLION2~1.3\bin\mingw_2\bin\gcc.exe -g -Wl,--whole-archive CMakeFiles\Projet_quoridor.dir/objects.a -Wl,--no-whole-archive -o Projet_quoridor.exe -Wl,--out-implib,libProjet_quoridor.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Projet_quoridor.dir\linkLibs.rsp
