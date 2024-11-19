@@ -273,39 +273,60 @@ int existe_chemin(Joueur joueur, int ligne_cible, int colonne_cible) {
 }
 
 // Fonction pour vérifier si le placement du mur est valide
-int mur_valide(int x1, int y1, int x2, int y2, Joueur joueurs[], int nombre_joueurs) {
-    // Vérifier si les cases sont adjacentes
-    if(abs(x1 - x2) + abs(y1 - y2) != 1)
-        return 0;
-
-    // Vérifier si les coordonnées sont dans le plateau
-    if(x1 < 0 || x1 >= TAILLE || y1 < 0 || y1 >= TAILLE ||
-       x2 < 0 || x2 >= TAILLE || y2 < 0 || y2 >= TAILLE)
-        return 0;
-
-    // Déterminer le type de mur à placer
+int mur_valide(int x[], int y[], Joueur joueurs[], int nombre_joueurs) {
+    // Vérifier que les quatre points forment un mur valide de taille 2
     int est_horizontal = 0;
-    if(x1 == x2) { // Mur horizontal
-        est_horizontal = 1;
-        int minY = (y1 < y2) ? y1 : y2;
-        if(murs_horizontaux[minY + 1][x1])
-            return 0; // Mur déjà présent
-    } else if(y1 == y2) { // Mur vertical
+    if(y[0] == y[1] && y[2] == y[3] && x[0] == x[2] && x[1] == x[3]) {
+        // Mur vertical
         est_horizontal = 0;
-        int minX = (x1 < x2) ? x1 : x2;
-        if(murs_verticaux[y1][minX + 1])
+    } else if(x[0] == x[1] && x[2] == x[3] && y[0] == y[2] && y[1] == y[3]) {
+        // Mur horizontal
+        est_horizontal = 1;
+    } else {
+        return 0; // Pas un mur valide
+    }
+
+    // Vérifier que les positions sont adjacentes correctement
+    if(est_horizontal) {
+        // Mur horizontal
+        if(abs(x[0] - x[2]) != 1 || abs(y[0] - y[1]) != 1)
+            return 0;
+    } else {
+        // Mur vertical
+        if(abs(y[0] - y[2]) != 1 || abs(x[0] - x[1]) != 1)
+            return 0;
+    }
+
+    // Vérifier si le mur sort du plateau
+    for(int i = 0; i < 4; i++) {
+        if(x[i] < 0 || x[i] >= TAILLE || y[i] < 0 || y[i] >= TAILLE)
+            return 0;
+    }
+
+    // Vérifier s'il y a déjà un mur à cet endroit
+    if(est_horizontal) {
+        int minX = (x[0] < x[2]) ? x[0] : x[2];
+        int y_pos = y[0] + 1;
+        if(murs_horizontaux[y_pos][minX] || murs_horizontaux[y_pos][minX + 1])
             return 0; // Mur déjà présent
     } else {
-        return 0; // Les cases ne sont pas alignées
+        int x_pos = x[0] + 1;
+        int minY = (y[0] < y[2]) ? y[0] : y[2];
+        if(murs_verticaux[minY][x_pos] || murs_verticaux[minY + 1][x_pos])
+            return 0; // Mur déjà présent
     }
 
     // Placer temporairement le mur
     if(est_horizontal) {
-        int minY = (y1 < y2) ? y1 : y2;
-        murs_horizontaux[minY + 1][x1] = 1;
+        int minX = (x[0] < x[2]) ? x[0] : x[2];
+        int y_pos = y[0] + 1;
+        murs_horizontaux[y_pos][minX] = 1;
+        murs_horizontaux[y_pos][minX + 1] = 1;
     } else {
-        int minX = (x1 < x2) ? x1 : x2;
-        murs_verticaux[y1][minX + 1] = 1;
+        int x_pos = x[0] + 1;
+        int minY = (y[0] < y[2]) ? y[0] : y[2];
+        murs_verticaux[minY][x_pos] = 1;
+        murs_verticaux[minY + 1][x_pos] = 1;
     }
 
     // Vérifier que chaque joueur a un chemin vers sa cible
@@ -313,11 +334,15 @@ int mur_valide(int x1, int y1, int x2, int y2, Joueur joueurs[], int nombre_joue
         if(!existe_chemin(joueurs[i], joueurs[i].ligne_cible, joueurs[i].colonne_cible)) {
             // Retirer le mur temporaire
             if(est_horizontal) {
-                int minY = (y1 < y2) ? y1 : y2;
-                murs_horizontaux[minY + 1][x1] = 0;
+                int minX = (x[0] < x[2]) ? x[0] : x[2];
+                int y_pos = y[0] + 1;
+                murs_horizontaux[y_pos][minX] = 0;
+                murs_horizontaux[y_pos][minX + 1] = 0;
             } else {
-                int minX = (x1 < x2) ? x1 : x2;
-                murs_verticaux[y1][minX + 1] = 0;
+                int x_pos = x[0] + 1;
+                int minY = (y[0] < y[2]) ? y[0] : y[2];
+                murs_verticaux[minY][x_pos] = 0;
+                murs_verticaux[minY + 1][x_pos] = 0;
             }
             return 0; // Placement invalide, bloque le chemin d'un joueur
         }
@@ -325,11 +350,15 @@ int mur_valide(int x1, int y1, int x2, int y2, Joueur joueurs[], int nombre_joue
 
     // Retirer le mur temporaire (il sera placé définitivement dans la fonction placer_mur)
     if(est_horizontal) {
-        int minY = (y1 < y2) ? y1 : y2;
-        murs_horizontaux[minY + 1][x1] = 0;
+        int minX = (x[0] < x[2]) ? x[0] : x[2];
+        int y_pos = y[0] + 1;
+        murs_horizontaux[y_pos][minX] = 0;
+        murs_horizontaux[y_pos][minX + 1] = 0;
     } else {
-        int minX = (x1 < x2) ? x1 : x2;
-        murs_verticaux[y1][minX + 1] = 0;
+        int x_pos = x[0] + 1;
+        int minY = (y[0] < y[2]) ? y[0] : y[2];
+        murs_verticaux[minY][x_pos] = 0;
+        murs_verticaux[minY + 1][x_pos] = 0;
     }
 
     return 1; // Placement valide
@@ -342,42 +371,63 @@ void placer_mur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
         return;
     }
     while(1) {
-        char saisie[20];
-        printf("Entrez les coordonnees (ex: B3B4): ");
+        char saisie[40];
+        printf("Entrez les coordonnees (ex: B3B4C3C4): ");
+        fflush(stdout); // Assurer l'affichage avant la saisie
         fgets(saisie, sizeof(saisie), stdin);
         // Enlever le caractère de nouvelle ligne
         saisie[strcspn(saisie, "\n")] = '\0';
 
         // Vérifier la longueur de l'entrée
-        if(strlen(saisie) < 4 || strlen(saisie) > 5) {
+        if(strlen(saisie) < 8 || strlen(saisie) > 10) {
             printf("Entree invalide. Essayez a nouveau.\n");
             continue;
         }
 
-        char coord1[3], coord2[3];
+        char coord1[3], coord2[3], coord3[3], coord4[3];
         strncpy(coord1, saisie, 2);
         coord1[2] = '\0';
         strncpy(coord2, &saisie[2], 2);
         coord2[2] = '\0';
+        strncpy(coord3, &saisie[4], 2);
+        coord3[2] = '\0';
+        strncpy(coord4, &saisie[6], 2);
+        coord4[2] = '\0';
 
-        int x1 = lettre_vers_indice(coord1[0]);
-        int y1 = atoi(&coord1[1]) - 1;
-        int x2 = lettre_vers_indice(coord2[0]);
-        int y2 = atoi(&coord2[1]) - 1;
+        int x[4], y[4];
+        x[0] = lettre_vers_indice(coord1[0]);
+        y[0] = atoi(&coord1[1]) - 1;
+        x[1] = lettre_vers_indice(coord2[0]);
+        y[1] = atoi(&coord2[1]) - 1;
+        x[2] = lettre_vers_indice(coord3[0]);
+        y[2] = atoi(&coord3[1]) - 1;
+        x[3] = lettre_vers_indice(coord4[0]);
+        y[3] = atoi(&coord4[1]) - 1;
 
-        if(x1 == -1 || y1 < 0 || y1 >= TAILLE || x2 == -1 || y2 < 0 || y2 >= TAILLE) {
+        int coords_valides = 1;
+        for(int i = 0; i < 4; i++) {
+            if(x[i] == -1 || y[i] < 0 || y[i] >= TAILLE) {
+                coords_valides = 0;
+                break;
+            }
+        }
+        if(!coords_valides) {
             printf("Coordonnees invalides. Essayez a nouveau.\n");
             continue;
         }
 
-        if(mur_valide(x1, y1, x2, y2, joueurs, nombre_joueurs)) {
+        if(mur_valide(x, y, joueurs, nombre_joueurs)) {
             // Placer le mur définitivement
-            if(x1 == x2) { // Mur horizontal
-                int minY = (y1 < y2) ? y1 : y2;
-                murs_horizontaux[minY + 1][x1] = 1;
-            } else if(y1 == y2) { // Mur vertical
-                int minX = (x1 < x2) ? x1 : x2;
-                murs_verticaux[y1][minX + 1] = 1;
+            if(y[0] == y[1]) { // Mur vertical
+                int x_pos = x[0] + 1;
+                int minY = (y[0] < y[2]) ? y[0] : y[2];
+                murs_verticaux[minY][x_pos] = 1;
+                murs_verticaux[minY + 1][x_pos] = 1;
+            } else if(x[0] == x[1]) { // Mur horizontal
+                int minX = (x[0] < x[2]) ? x[0] : x[2];
+                int y_pos = y[0] + 1;
+                murs_horizontaux[y_pos][minX] = 1;
+                murs_horizontaux[y_pos][minX + 1] = 1;
             }
             joueur->barrieres_restantes--;
             break;
