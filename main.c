@@ -1,4 +1,3 @@
-
 #include "header.h"
 
 int main() {
@@ -77,8 +76,6 @@ int main() {
         // Joueur actuel choisi au hasard
         joueur_actuel = rand() % nombre_joueurs;
     }
-
-
 
     // Boucle principale du jeu
     while (1) {
