@@ -1,3 +1,0 @@
-C:/wamp64/www/Projet_quoridor/cmake-build-debug/CMakeFiles/Projet_quoridor.dir
-C:/wamp64/www/Projet_quoridor/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/wamp64/www/Projet_quoridor/cmake-build-debug/CMakeFiles/rebuild_cache.dir
