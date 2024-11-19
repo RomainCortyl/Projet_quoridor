@@ -86,6 +86,5 @@ int main() {
         system(EFFACER);
         joueur_actuel = (joueur_actuel + 1) % nombre_joueurs;
     }
-
     return 0;
 }
