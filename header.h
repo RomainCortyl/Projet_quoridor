@@ -2,13 +2,13 @@
 // Created by rom1c on 18/11/2024.
 //
 
-#ifndef PROJET_QUORIDOR_HEADER_H
-#define PROJET_QUORIDOR_HEADER_H
-
+#ifndef QORIDORV1_HEADER_H
+#define QORIDORV1_HEADER_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <time.h>
 
 #define TAILLE 9
 #define LARGEUR_COLONNE 6 // Largeur constante pour chaque colonne
@@ -39,7 +39,21 @@ void afficher_plateau(Joueur joueurs[], int nombre_joueurs);
 int lettre_vers_indice(char lettre);
 char indice_vers_lettre(int indice);
 void initialiser_plateau();
-void afficher_plateau(Joueur joueurs[], int nombre_joueurs);
+void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueurs, int joueur_actuel);
+int mouvement_valide(Joueur *joueur, int x, int y);
+void deplacer_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
+int existe_chemin(Joueur joueur, int ligne_cible, int colonne_cible);
+int mur_valide(int x[], int y[], Joueur joueurs[], int nombre_joueurs);
+void placer_mur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
+int a_gagne(Joueur *joueur);
+int tour_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
+void entrer_pseudos(Joueur joueurs[], int nombre_joueurs);
+void choisir_pions(Joueur joueurs[], int nombre_joueurs);
+int demander_nombre_joueurs();
+//void charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel);
+int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel);
+void quitter_jeu(Joueur joueurs[], int nombre_joueurs, Joueur *joueur);
+
 
 // Fonction pour convertir une lettre en indice de colonne
 int lettre_vers_indice(char lettre) {
@@ -272,7 +286,7 @@ int existe_chemin(Joueur joueur, int ligne_cible, int colonne_cible) {
     return 0; // Pas de chemin trouvé
 }
 
-// Fonction pour vérifier si le placement du mur est valide
+/// Fonction pour vérifier si le placement du mur est valide
 int mur_valide(int x[], int y[], Joueur joueurs[], int nombre_joueurs) {
     // Vérifier que les quatre points forment un mur valide de taille 2
     int est_horizontal = 0;
@@ -478,8 +492,9 @@ int tour_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
             printf("Tour passe.\n");
             break;
         } else if(choix == 4) {
-            printf("%s (%c) a quitte le jeu.\n", joueur->pseudo, joueur->symbole);
-            exit(0); // Quitter le programme
+            quitter_jeu(joueurs, nombre_joueurs, joueurs); // Appel de la fonction quitter_jeu
+            //printf("%s (%c) a quitte le jeu.\n", joueur->pseudo, joueur->symbole);
+            //exit(0); // Quitter le programme
         } else {
             printf("Choix invalide. Essayez a nouveau.\n");
         }
@@ -577,5 +592,190 @@ int demander_nombre_joueurs() {
     return nombre_joueurs;
 }
 
+void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueurs, int joueur_actuel) {
+    FILE *fichier = fopen(nom_fichier, "w");
+    if (!fichier) {
+        perror("Erreur lors de l'ouverture du fichier de sauvegarde");
+        return;
+    }
 
-#endif //PROJET_QUORIDOR_HEADER_H
+    // Sauvegarder le nombre de joueurs
+    fprintf(fichier, "%d\n", nombre_joueurs);
+
+    // Sauvegarder les joueurs
+    for (int i = 0; i < nombre_joueurs; i++) {
+        fprintf(fichier, "%s %c %d %d %d %d %d\n",
+                joueurs[i].pseudo,               // Pseudo du joueur
+                joueurs[i].symbole,              // Symbole du joueur
+                joueurs[i].x,                    // Coordonnée x
+                joueurs[i].y,                    // Coordonnée y
+                joueurs[i].barrieres_restantes,  // Barrières restantes
+                joueurs[i].ligne_cible,          // Ligne cible
+                joueurs[i].colonne_cible);       // Colonne cible
+    }
+
+    // Sauvegarder les murs placés : format x1 y1 x2 y2 pour chaque mur
+    for (int i = 0; i < TAILLE; i++) {
+        for (int j = 0; j < TAILLE - 1; j++) {
+            if (murs_horizontaux[i][j] == 1) {
+                fprintf(fichier, "h: %d %d\n", i, j + 1);  // Mur horizontal entre (i,j) et (i,j+1)
+            }
+        }
+    }
+
+    for (int i = 0; i < TAILLE - 1; i++) {
+        for (int j = 0; j < TAILLE; j++) {
+            if (murs_verticaux[i][j] == 1) {
+                fprintf(fichier, "v: %d %d\n", i + 1, j);  // Mur vertical entre (i,j) et (i+1,j)
+            }
+        }
+    }
+
+    // Sauvegarder l'état du plateau : chaque ligne du plateau avec '1' pour les joueurs et '0' pour les cases vides
+    /*/for (int i = 0; i < TAILLE; i++) {
+        for (int j = 0; j < TAILLE; j++) {
+            if (plateau[i][j] != 0) {
+                // Si une case est occupée par un joueur, on sauvegarde l'ID du joueur (par exemple, par son symbole)
+                fprintf(fichier, "1 ");
+            } else {
+                fprintf(fichier, "0 ");
+            }
+        }
+        fprintf(fichier, "\n");
+    }/*/
+
+    // Sauvegarder le joueur actuel (index du joueur en cours)
+    fprintf(fichier, "%d\n", joueur_actuel);
+
+    fclose(fichier);
+    printf("Jeu sauvegarde dans %s.\n", nom_fichier);
+}
+
+/*/
+int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel) {
+    FILE *fichier = fopen(nom_fichier, "r");
+    if (!fichier) {
+        perror("Erreur lors de l'ouverture du fichier de sauvegarde");
+        return 0;
+    }
+
+    // Charger le nombre de joueurs
+    fscanf(fichier, "%d\n", nombre_joueurs);
+
+    // Charger les joueurs
+    for (int i = 0; i < *nombre_joueurs; i++) {
+        fscanf(fichier, "%s %c %d %d %d %d %d\n",
+               joueurs[i].pseudo,               // Pseudo du joueur
+               &joueurs[i].symbole,              // Symbole du joueur
+               &joueurs[i].x,                    // Coordonnée x
+               &joueurs[i].y,                    // Coordonnée y
+               &joueurs[i].barrieres_restantes,  // Barrières restantes
+               &joueurs[i].ligne_cible,          // Ligne cible
+               &joueurs[i].colonne_cible);       // Colonne cible
+    }
+
+    // Charger l'état du plateau
+    for (int i = 0; i < TAILLE; i++) {
+        for (int j = 0; j < TAILLE; j++) {
+            fscanf(fichier, " %c", &plateau[i][j]);
+            // Si un joueur est présent sur cette case, on le marque
+            if (plateau[i][j] != '0' && plateau[i][j] != ' ') {
+                // Si la case contient un joueur, par exemple '1' pour un joueur
+                // On devra attribuer le bon joueur selon l'état du plateau
+            }
+        }
+    }
+
+    // Charger les murs horizontaux
+    for (int i = 0; i < TAILLE; i++) {
+        for (int j = 0; j < TAILLE - 1; j++) {
+            int mur;
+            fscanf(fichier, "%d", &mur);
+            murs_horizontaux[i][j] = mur;
+        }
+    }
+
+    // Charger les murs verticaux
+    for (int i = 0; i < TAILLE - 1; i++) {
+        for (int j = 0; j < TAILLE; j++) {
+            int mur;
+            fscanf(fichier, "%d", &mur);
+            murs_verticaux[i][j] = mur;
+        }
+    }
+    afficher_plateau(joueurs, *nombre_joueurs);
+
+
+    // Charger le joueur actuel
+    fscanf(fichier, "%d\n", joueur_actuel);
+
+    fclose(fichier);
+    printf("Jeu charge depuis %s.\n", nom_fichier);
+}/*/
+int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel) {
+    FILE *fichier = fopen(nom_fichier, "r");
+    if (!fichier) {
+        perror("Erreur lors de l'ouverture du fichier de sauvegarde");
+        return 0;
+    }
+
+    // Charger le nombre de joueurs
+    fscanf(fichier, "%d\n", nombre_joueurs);
+
+    // Charger les joueurs
+    for (int i = 0; i < *nombre_joueurs; i++) {
+        fscanf(fichier, "%s %c %d %d %d %d %d\n",
+               joueurs[i].pseudo,
+               &joueurs[i].symbole,
+               &joueurs[i].x,
+               &joueurs[i].y,
+               &joueurs[i].barrieres_restantes,
+               &joueurs[i].ligne_cible,
+               &joueurs[i].colonne_cible);
+    }
+
+    // Initialiser les matrices des murs
+    memset(murs_horizontaux, 0, sizeof(murs_horizontaux));
+    memset(murs_verticaux, 0, sizeof(murs_verticaux));
+
+    // Charger les barrières horizontales (h:) et verticales (v:)
+    char type;
+    int x, y;
+    while (fscanf(fichier, "%c: %d %d\n", &type, &x, &y) == 3) {
+        if (type == 'h') {
+            murs_horizontaux[x][y] = 1; // Mur horizontal
+        } else if (type == 'v') {
+            murs_verticaux[x][y] = 1; // Mur vertical
+        }
+    }
+
+    // Charger le joueur actuel
+    fscanf(fichier, "%d\n", joueur_actuel);
+
+    fclose(fichier);
+    printf("Jeu chargé depuis %s.\n", nom_fichier);
+    return 1;
+}
+
+
+void quitter_jeu(Joueur joueurs[], int nombre_joueurs, Joueur *joueur) {
+    char choix;
+
+    printf("\nLe joueur %s (%c) souhaite quitter la partie.\n", joueur->pseudo, joueur->symbole);
+    printf("Voulez-vous sauvegarder la partie avant de quitter ? (O/N) : ");
+    scanf(" %c", &choix);
+
+    if (toupper(choix) == 'O') {
+        // Sauvegarder la partie
+        sauvegarder_jeu("sauvegarde.txt", joueurs, nombre_joueurs, joueur - joueurs); // Calcul de l'indice du joueur
+        printf("Partie sauvegardee avec succes !\n");
+    }
+
+    printf("Merci d'avoir joue ! La partie est terminee.\n");
+    exit(0); // Quitte le programme
+}
+
+
+
+
+#endif //QORIDORV1_HEADER_H
