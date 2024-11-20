@@ -475,7 +475,7 @@ void placer_mur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
     if(joueur->barrieres_restantes <= 0) {
         char choix;
         printf("Vous n'avez plus de barrieres.\n");
-        printf("Voulez-vous déplacer une barriere existante ? (O/N) : ");
+        printf("Voulez-vous deplacer une barriere existante ? (O/N) : ");
         scanf(" %c", &choix);
         while(getchar() != '\n'); // Vider le tampon d'entrée
 
@@ -925,7 +925,7 @@ void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueu
     fprintf(fichier, "%d\n", joueur_actuel);
 
     fclose(fichier);
-    printf("Jeu sauvegardé dans %s.\n", nom_fichier);
+    printf("Jeu sauvegarde dans %s.\n", nom_fichier);
 }
 
 
@@ -1004,7 +1004,7 @@ int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, 
     fscanf(fichier, "%d\n", joueur_actuel);
 
     fclose(fichier);
-    printf("Jeu chargé depuis %s.\n", nom_fichier);
+    printf("Jeu charge depuis %s.\n", nom_fichier);
     return 1;
 }
 

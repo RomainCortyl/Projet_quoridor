@@ -102,9 +102,9 @@ int main() {
             joueurs[joueur_actuel].score++;
             sauvegarder_jeu("sauvegarde.txt", joueurs, nombre_joueurs, 0);
             for (int i = 0; i < nombre_joueurs; ++i) {
-                printf("voici le score des joueurs : %s : %d  \n", joueurs[i].pseudo, joueurs[i].score);
+                printf("Voici le score des joueurs : %s : %d  \n", joueurs[i].pseudo, joueurs[i].score);
             }
-            printf("voulez-vous relancer une partie ? 1.OUI/2.NON\n");
+            printf("Voulez-vous relancer une partie ? 1.OUI/2.NON\n");
             int revanche;
             scanf("%d", &revanche);
             while(getchar() != '\n');
