@@ -26,17 +26,26 @@
 #else
 #endif
 
+#define PION1 254
+#define PION2 169
+#define PION3 207
+#define PION4 184
+#define PION5 158
+#define PION6 189
+
+
 typedef struct {
     char pseudo[50]; // Pseudo du joueur
-    char symbole;
+    int symbole;     // Changement de char à int
     int x;
     int y;
     int barrieres_restantes;
     int ligne_cible; // Pour les joueurs se déplaçant verticalement
     int colonne_cible; // Pour les joueurs se déplaçant horizontalement
-    int score;// score du joueur
+    int score;       // Score du joueur
     const char *couleur; // Code de couleur ANSI du joueur
 } Joueur;
+
 
 char plateau[TAILLE][TAILLE]; // Plateau de jeu
 int murs_horizontaux[TAILLE+1][TAILLE]; // Murs horizontaux
@@ -136,6 +145,7 @@ void afficher_plateau(Joueur joueurs[], int nombre_joueurs) {
             }
             if(!est_joueur)
                 printf("     "); // Espace vide de 5 caractères
+
         }
         // Mur vertical à droite de la dernière case
         if(murs_verticaux[i][TAILLE])
@@ -588,74 +598,71 @@ void entrer_pseudos(Joueur joueurs[], int nombre_joueurs) {
     }
 }
 
-// Fonction pour permettre aux joueurs de choisir leur pion
 void choisir_pions(Joueur joueurs[], int nombre_joueurs) {
-    char symboles_disponibles[] = {'X', 'O', '@', '#', '$', '%', '&', '*', '!', '?'};
+    int pions_disponibles[] = {PION1, PION2, PION3, PION4, PION5, PION6};
     const char *couleurs_disponibles[] = {ROUGE, VERT, JAUNE, BLEU, MAGENTA, CYAN};
-    int nombre_symboles = sizeof(symboles_disponibles) / sizeof(symboles_disponibles[0]);
+    int nombre_pions = sizeof(pions_disponibles) / sizeof(pions_disponibles[0]);
     int nombre_couleurs = sizeof(couleurs_disponibles) / sizeof(couleurs_disponibles[0]);
 
     for(int i = 0; i < nombre_joueurs; i++) {
+        // Attribuer une couleur disponible au joueur
+        if (i < nombre_couleurs) {
+            joueurs[i].couleur = couleurs_disponibles[i];
+        } else {
+            joueurs[i].couleur = couleurs_disponibles[i % nombre_couleurs];
+        }
+
         while(1) {
-            printf("%s, choisissez votre pion : ", joueurs[i].pseudo);
-            for(int j = 0; j < nombre_symboles; j++) {
+            printf("%s, choisissez votre pion en entrant un chiffre :\n", joueurs[i].pseudo);
+            printf("Pions disponibles :\n");
+
+            int mapping[nombre_pions];  // Pour mapper le numéro de choix à l'indice réel
+            int index_choix = 0;
+
+            for(int j = 0; j < nombre_pions; j++) {
                 int deja_choisi = 0;
-                // Vérifier si le symbole est déjà pris
+                // Vérifier si le pion est déjà pris
                 for(int k = 0; k < i; k++) {
-                    if(joueurs[k].symbole == symboles_disponibles[j]) {
+                    if(joueurs[k].symbole == pions_disponibles[j]) {
                         deja_choisi = 1;
                         break;
                     }
                 }
                 if(!deja_choisi) {
-                    printf("%c ", symboles_disponibles[j]);
+                    mapping[index_choix] = j; // Mappe le numéro de choix à l'indice réel
+                    printf("%d. %s%c%s\n", index_choix + 1, joueurs[i].couleur, pions_disponibles[j], RESET);
+                    index_choix++;
                 }
             }
-            printf("\nVotre choix : ");
+
+            if(index_choix == 0) {
+                printf("Plus de pions disponibles.\n");
+                exit(1); // Terminer le programme ou gérer autrement
+            }
+
+            printf("Votre choix : ");
             char saisie[10];
             fgets(saisie, sizeof(saisie), stdin);
             // Enlever le caractère de nouvelle ligne
             saisie[strcspn(saisie, "\n")] = '\0';
 
-            if(strlen(saisie) != 1) {
-                printf("Entree invalide. Reessayez.\n");
+            // Vérifier que l'entrée est un nombre valide
+            int choix = atoi(saisie);
+            if(choix < 1 || choix > index_choix) {
+                printf("Entree invalide. Veuillez entrer un chiffre correspondant a un pion disponible.\n");
                 continue;
             }
 
-            char symbole_choisi = saisie[0];
-
-            // Vérifier si le symbole est disponible
-            int symbole_valide = 0;
-            for(int j = 0; j < nombre_symboles; j++) {
-                if(symboles_disponibles[j] == symbole_choisi) {
-                    symbole_valide = 1;
-                    // Vérifier si le symbole est déjà pris
-                    for(int k = 0; k < i; k++) {
-                        if(joueurs[k].symbole == symbole_choisi) {
-                            symbole_valide = 0;
-                            break;
-                        }
-                    }
-                    break;
-                }
-            }
-
-            if(symbole_valide) {
-                joueurs[i].symbole = symbole_choisi;
-                // Attribuer une couleur disponible
-                if (i < nombre_couleurs) {
-                    joueurs[i].couleur = couleurs_disponibles[i];
-                } else {
-                    // Si plus de couleurs disponibles, réutiliser depuis le début
-                    joueurs[i].couleur = couleurs_disponibles[i % nombre_couleurs];
-                }
-                break;
-            } else {
-                printf("Symbole invalide ou deja pris. Reessayez.\n");
-            }
+            // Obtenir l'indice réel du pion choisi
+            int indice_pion = mapping[choix - 1];
+            joueurs[i].symbole = pions_disponibles[indice_pion];
+            printf("Pion '%s%c%s' attribue a %s.\n", joueurs[i].couleur, joueurs[i].symbole, RESET, joueurs[i].pseudo);
+            break;
         }
     }
 }
+
+
 
 // Fonction pour demander le nombre de joueurs
 int demander_nombre_joueurs() {
@@ -664,7 +671,7 @@ int demander_nombre_joueurs() {
         printf("Combien de joueurs vont jouer ? (2 ou 4) : ");
         if(scanf("%d", &nombre_joueurs) != 1) {
             printf("Entree invalide. Veuillez entrer un nombre.\n");
-            while(getchar() != '\n'); // Vider le tampon d'entrée
+           while(getchar() != '\n'); // Vider le tampon d'entrée
             continue;
         }
         while(getchar() != '\n'); // Vider le tampon d'entrée
