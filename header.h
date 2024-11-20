@@ -70,6 +70,11 @@ void choisir_pions(Joueur joueurs[], int nombre_joueurs);
 int demander_nombre_joueurs();
 int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel);
 void quitter_jeu(Joueur joueurs[], int nombre_joueurs, Joueur *joueur);
+void placer_barriere_aux(int x[], int y[]);
+void deplacer_barriere(Joueur joueurs[], int nombre_joueurs);
+int parser_coordonnees_barriere(char *saisie, int x[], int y[]);
+int barriere_existe(int x[], int y[]);
+void retirer_barriere(int x[], int y[]);
 
 
 // Fonction pour convertir une lettre en indice de colonne
@@ -468,7 +473,17 @@ int mur_valide(int x[], int y[], Joueur joueurs[], int nombre_joueurs) {
 // Fonction pour placer un mur
 void placer_mur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
     if(joueur->barrieres_restantes <= 0) {
+        char choix;
         printf("Vous n'avez plus de barrieres.\n");
+        printf("Voulez-vous déplacer une barriere existante ? (O/N) : ");
+        scanf(" %c", &choix);
+        while(getchar() != '\n'); // Vider le tampon d'entrée
+
+        if(toupper(choix) == 'O') {
+            deplacer_barriere(joueurs, nombre_joueurs);
+        } else {
+            printf("Action annulee.\n");
+        }
         return;
     }
     while(1) {
@@ -537,6 +552,169 @@ void placer_mur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
         }
     }
 }
+
+void deplacer_barriere(Joueur joueurs[], int nombre_joueurs) {
+    while(1) {
+        char saisie[40];
+        printf("Entrez les coordonnees de la barriere a deplacer (ex: B3B4C3C4): ");
+        fgets(saisie, sizeof(saisie), stdin);
+        // Enlever le caractère de nouvelle ligne
+        saisie[strcspn(saisie, "\n")] = '\0';
+
+        // Vérifier la longueur de l'entrée
+        if(strlen(saisie) < 8 || strlen(saisie) > 10) {
+            printf("Entree invalide. Essayez a nouveau.\n");
+            continue;
+        }
+
+        int x[4], y[4];
+        if(!parser_coordonnees_barriere(saisie, x, y)) {
+            printf("Coordonnees invalides. Essayez a nouveau.\n");
+            continue;
+        }
+
+        // Vérifier si une barrière existe à ces coordonnées
+        if(!barriere_existe(x, y)) {
+            printf("Aucune barriere n'existe a ces coordonnees. Essayez a nouveau.\n");
+            continue;
+        }
+
+        // Retirer temporairement la barrière
+        retirer_barriere(x, y);
+
+        // Demander les nouvelles coordonnées
+        printf("Entrez les nouvelles coordonnees pour placer la barriere (ex: D5D6E5E6): ");
+        fgets(saisie, sizeof(saisie), stdin);
+        // Enlever le caractère de nouvelle ligne
+        saisie[strcspn(saisie, "\n")] = '\0';
+
+        // Vérifier la longueur de l'entrée
+        if(strlen(saisie) < 8 || strlen(saisie) > 10) {
+            printf("Entree invalide. La barriere n'a pas ete déplacee.\n");
+            // Remettre la barrière à sa position initiale
+            placer_barriere_aux(x, y);
+            return;
+        }
+
+        int x_new[4], y_new[4];
+        if(!parser_coordonnees_barriere(saisie, x_new, y_new)) {
+            printf("Coordonnees invalides. La barriere n'a pas ete deplacee.\n");
+            // Remettre la barrière à sa position initiale
+            placer_barriere_aux(x, y);
+            return;
+        }
+
+        // Vérifier si le placement est valide
+        if(mur_valide(x_new, y_new, joueurs, nombre_joueurs)) {
+            // Placer la barrière à la nouvelle position
+            placer_barriere_aux(x_new, y_new);
+            printf("La barriere a ete deplacee avec succes.\n");
+            break;
+        } else {
+            printf("Placement invalide. La barriere n'a pas ete deplacee.\n");
+            // Remettre la barrière à sa position initiale
+            placer_barriere_aux(x, y);
+            return;
+        }
+    }
+}
+int parser_coordonnees_barriere(char *saisie, int x[], int y[]) {
+    if(strlen(saisie) < 8 || strlen(saisie) > 10)
+        return 0;
+
+    char coord1[3], coord2[3], coord3[3], coord4[3];
+    strncpy(coord1, saisie, 2);
+    coord1[2] = '\0';
+    strncpy(coord2, &saisie[2], 2);
+    coord2[2] = '\0';
+    strncpy(coord3, &saisie[4], 2);
+    coord3[2] = '\0';
+    strncpy(coord4, &saisie[6], 2);
+    coord4[2] = '\0';
+
+    x[0] = lettre_vers_indice(coord1[0]);
+    y[0] = atoi(&coord1[1]) - 1;
+    x[1] = lettre_vers_indice(coord2[0]);
+    y[1] = atoi(&coord2[1]) - 1;
+    x[2] = lettre_vers_indice(coord3[0]);
+    y[2] = atoi(&coord3[1]) - 1;
+    x[3] = lettre_vers_indice(coord4[0]);
+    y[3] = atoi(&coord4[1]) - 1;
+
+    for(int i = 0; i < 4; i++) {
+        if(x[i] == -1 || y[i] < 0 || y[i] >= TAILLE)
+            return 0;
+    }
+
+    return 1;
+}
+int barriere_existe(int x[], int y[]) {
+    int est_horizontal = 0;
+    if(y[0] == y[1] && y[2] == y[3] && x[0] == x[2] && x[1] == x[3]) {
+        // Barrière verticale
+        est_horizontal = 0;
+    } else if(x[0] == x[1] && x[2] == x[3] && y[0] == y[2] && y[1] == y[3]) {
+        // Barrière horizontale
+        est_horizontal = 1;
+    } else {
+        return 0; // Pas une barrière valide
+    }
+
+    if(est_horizontal) {
+        int minX = (x[0] < x[2]) ? x[0] : x[2];
+        int y_pos = y[0] + 1;
+        if(murs_horizontaux[y_pos][minX] && murs_horizontaux[y_pos][minX + 1])
+            return 1; // Barrière horizontale existe
+    } else {
+        int x_pos = x[0] + 1;
+        int minY = (y[0] < y[2]) ? y[0] : y[2];
+        if(murs_verticaux[minY][x_pos] && murs_verticaux[minY + 1][x_pos])
+            return 1; // Barrière verticale existe
+    }
+
+    return 0; // Aucune barrière à ces coordonnées
+}
+void retirer_barriere(int x[], int y[]) {
+    int est_horizontal = 0;
+    if(y[0] == y[1]) {
+        est_horizontal = 0;
+    } else if(x[0] == x[1]) {
+        est_horizontal = 1;
+    }
+
+    if(est_horizontal) {
+        int minX = (x[0] < x[2]) ? x[0] : x[2];
+        int y_pos = y[0] + 1;
+        murs_horizontaux[y_pos][minX] = 0;
+        murs_horizontaux[y_pos][minX + 1] = 0;
+    } else {
+        int x_pos = x[0] + 1;
+        int minY = (y[0] < y[2]) ? y[0] : y[2];
+        murs_verticaux[minY][x_pos] = 0;
+        murs_verticaux[minY + 1][x_pos] = 0;
+    }
+}
+void placer_barriere_aux(int x[], int y[]) {
+    int est_horizontal = 0;
+    if(y[0] == y[1]) {
+        est_horizontal = 0;
+    } else if(x[0] == x[1]) {
+        est_horizontal = 1;
+    }
+
+    if(est_horizontal) {
+        int minX = (x[0] < x[2]) ? x[0] : x[2];
+        int y_pos = y[0] + 1;
+        murs_horizontaux[y_pos][minX] = 1;
+        murs_horizontaux[y_pos][minX + 1] = 1;
+    } else {
+        int x_pos = x[0] + 1;
+        int minY = (y[0] < y[2]) ? y[0] : y[2];
+        murs_verticaux[minY][x_pos] = 1;
+        murs_verticaux[minY + 1][x_pos] = 1;
+    }
+}
+
 
 // Fonction pour vérifier si un joueur a gagné
 int a_gagne(Joueur *joueur) {
