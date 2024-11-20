@@ -28,6 +28,7 @@ typedef struct {
     int barrieres_restantes;
     int ligne_cible; // Pour les joueurs se déplaçant verticalement
     int colonne_cible; // Pour les joueurs se déplaçant horizontalement
+    int score;// score du joueur
 } Joueur;
 
 char plateau[TAILLE][TAILLE]; // Plateau de jeu
