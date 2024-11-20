@@ -53,22 +53,28 @@ int main() {
             joueurs[0].x = TAILLE / 2;
             joueurs[0].y = 0;
             joueurs[0].ligne_cible = TAILLE - 1;
+            joueurs[0].score=0;
             joueurs[1].x = TAILLE / 2;
             joueurs[1].y = TAILLE - 1;
             joueurs[1].ligne_cible = 0;
+            joueurs[1].score=0;
         } else if (nombre_joueurs == 4) {
             joueurs[0].x = TAILLE / 2;
             joueurs[0].y = 0;
             joueurs[0].ligne_cible = TAILLE - 1;
+            joueurs[0].score=0;
             joueurs[1].x = TAILLE / 2;
             joueurs[1].y = TAILLE - 1;
             joueurs[1].ligne_cible = 0;
+            joueurs[1].score=0;
             joueurs[2].x = 0;
             joueurs[2].y = TAILLE / 2;
             joueurs[2].colonne_cible = TAILLE - 1;
+            joueurs[2].score=0;
             joueurs[3].x = TAILLE - 1;
             joueurs[3].y = TAILLE / 2;
             joueurs[3].colonne_cible = 0;
+            joueurs[3].score=0;
         }
         // Initialiser le plateau
         initialiser_plateau();
@@ -85,15 +91,68 @@ int main() {
         // Effectuer le tour du joueur
         tour_joueur(&joueurs[joueur_actuel], joueurs, nombre_joueurs);
 
+
+
         // Vérifier si le joueur a gagné
         if (a_gagne(&joueurs[joueur_actuel])) {
             system(EFFACER); // Nettoyer l'écran avant d'afficher le plateau final
             afficher_plateau(joueurs, nombre_joueurs);
-            printf("%s (%c) a gagné !\n", joueurs[joueur_actuel].pseudo, joueurs[joueur_actuel].symbole);
+            printf("%s (%c) a gagne !\n", joueurs[joueur_actuel].pseudo, joueurs[joueur_actuel].symbole);
             joueurs[joueur_actuel].score++;
-            // Sauvegarder la partie à la fin
-            sauvegarder_jeu(fichier_sauvegarde, joueurs, nombre_joueurs, joueur_actuel);
-            break;
+            sauvegarder_jeu("sauvegarde.txt", joueurs, nombre_joueurs, 0);
+            for (int i = 0; i < nombre_joueurs; ++i) {
+                printf("voici le score des joueurs : %s : %d  \n", joueurs[i].pseudo, joueurs[i].score);
+            }
+            printf("voulez-vous relancer une partie ? 1.OUI/2.NON\n");
+            int revanche;
+            scanf("%d", &revanche);
+            while(getchar() != '\n');
+
+            if(revanche == 1 ){
+                if (revanche == 1) {
+                    // Réinitialiser le plateau
+                    initialiser_plateau();
+
+                    // Réinitialiser les joueurs
+                    for (int i = 0; i < nombre_joueurs; i++) {
+                        joueurs[i].barrieres_restantes = (nombre_joueurs == 2) ? 10 : 5;
+                        if (nombre_joueurs == 2) {
+                            joueurs[0].x = TAILLE / 2;
+                            joueurs[0].y = 0;
+                            joueurs[0].ligne_cible = TAILLE - 1;
+                            joueurs[1].x = TAILLE / 2;
+                            joueurs[1].y = TAILLE - 1;
+                            joueurs[1].ligne_cible = 0;
+                        } else if (nombre_joueurs == 4) {
+                            joueurs[0].x = TAILLE / 2;
+                            joueurs[0].y = 0;
+                            joueurs[0].ligne_cible = TAILLE - 1;
+                            joueurs[1].x = TAILLE / 2;
+                            joueurs[1].y = TAILLE - 1;
+                            joueurs[1].ligne_cible = 0;
+                            joueurs[2].x = 0;
+                            joueurs[2].y = TAILLE / 2;
+                            joueurs[2].colonne_cible = TAILLE - 1;
+                            joueurs[3].x = TAILLE - 1;
+                            joueurs[3].y = TAILLE / 2;
+                            joueurs[3].colonne_cible = 0;
+                        }
+                    }
+
+                    // Reprendre au joueur choisi aléatoirement
+                    joueur_actuel = rand() % nombre_joueurs;
+                    continue; // Retourner à la boucle principale
+                }
+
+
+            }
+            if(revanche == 2){
+                break;
+            }
+            else{
+                printf("choix invalide");
+                continue;
+            }
         }
 
         // Passer au joueur suivant
