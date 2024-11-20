@@ -32,7 +32,6 @@ int main() {
     if (choix == 1) {
         // Demander le nombre de joueurs
         nombre_joueurs = demander_nombre_joueurs();
-        while (getchar() != '\n'); // Vider le tampon d'entrée
 
         // Permettre aux joueurs de saisir leur pseudo et de choisir leur pion
         entrer_pseudos(joueurs, nombre_joueurs);
