@@ -18,6 +18,7 @@
 #define EFFACER "cls"
 #define RESET   "\x1b[0m"
 #define ROUGE   "\x1b[31m"
+#define ORANGE  "\x1b[38;5;208m"
 #define VERT    "\x1b[32m"
 #define JAUNE   "\x1b[33m"
 #define BLEU    "\x1b[34m"

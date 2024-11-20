@@ -5,16 +5,18 @@ int main() {
     srand(time(NULL));
 
     // Menu d'accueil
-    printf("\nBienvenue dans le jeu Quoridor !\n\n");
+    printf("%s\nBienvenue dans le jeu Quoridor !\n\n%s", ORANGE, RESET);
     int nombre_joueurs = 0;
     Joueur joueurs[MAX_JOUEURS];
     int joueur_actuel = 0;
     char fichier_sauvegarde[] = "sauvegarde.txt";
 
     // Menu de choix : Nouvelle partie ou charger une partie
-    printf("1. Nouvelle partie\n");
-    printf("2. Charger une partie\n");
-    printf("Votre choix : ");
+
+    printf("%s1. Nouvelle partie%s\n", JAUNE, RESET);
+    printf("%s2. Charger une partie%s\n", JAUNE, RESET);
+
+    printf("%sVotre choix : %s\n", ROUGE, RESET);
     int choix;
     scanf("%d", &choix);
     while (getchar() != '\n'); // Vider le tampon d'entrée
