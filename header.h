@@ -16,8 +16,14 @@
 
 #ifdef _WIN32
 #define EFFACER "cls"
+#define RESET   "\x1b[0m"
+#define ROUGE   "\x1b[31m"
+#define VERT    "\x1b[32m"
+#define JAUNE   "\x1b[33m"
+#define BLEU    "\x1b[34m"
+#define MAGENTA "\x1b[35m"
+#define CYAN    "\x1b[36m"
 #else
-#define EFFACER "clear"
 #endif
 
 typedef struct {
@@ -29,6 +35,7 @@ typedef struct {
     int ligne_cible; // Pour les joueurs se déplaçant verticalement
     int colonne_cible; // Pour les joueurs se déplaçant horizontalement
     int score;// score du joueur
+    const char *couleur; // Code de couleur ANSI du joueur
 } Joueur;
 
 char plateau[TAILLE][TAILLE]; // Plateau de jeu
@@ -98,12 +105,11 @@ void afficher_plateau(Joueur joueurs[], int nombre_joueurs) {
     printf("\n");
 
     for(int i = TAILLE - 1; i >= 0; i--) {
-        // Affichage des murs horizontaux au-dessus des cases
         printf("   "); // Alignement avec l'indice de ligne
         for(int j = 0; j < TAILLE; j++) {
             printf("+");
             if(murs_horizontaux[i+1][j])
-                printf("-----"); // Mur horizontal
+                printf("%s-----" RESET, ROUGE); // Mur horizontal en rouge
             else
                 printf("     "); // Espace vide
         }
@@ -116,7 +122,7 @@ void afficher_plateau(Joueur joueurs[], int nombre_joueurs) {
         for(int j = 0; j < TAILLE; j++) {
             // Mur vertical à gauche de la case
             if(murs_verticaux[i][j])
-                printf("|");
+                printf("%s|%s", ROUGE, RESET); // Mur vertical en rouge
             else
                 printf(" ");
 
@@ -124,7 +130,7 @@ void afficher_plateau(Joueur joueurs[], int nombre_joueurs) {
             int est_joueur = 0;
             for(int p = 0; p < nombre_joueurs; p++) {
                 if(joueurs[p].x == j && joueurs[p].y == i) {
-                    printf("  %c  ", joueurs[p].symbole); // Total de 5 caractères
+                    printf(" %s %c %s ", joueurs[p].couleur, joueurs[p].symbole, RESET); // Afficher le pion en couleur
                     est_joueur = 1;
                     break;
                 }
@@ -151,7 +157,9 @@ void afficher_plateau(Joueur joueurs[], int nombre_joueurs) {
             printf("     ");
     }
     printf("+\n");
+
 }
+
 
 // Fonction pour vérifier si le déplacement est valide
 int mouvement_valide(Joueur *joueur, int x, int y) {
@@ -466,7 +474,7 @@ int a_gagne(Joueur *joueur) {
 // Fonction pour gérer le tour d'un joueur
 int tour_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
     while(1) {
-        printf("C'est au tour de %s (%c).\n", joueur->pseudo, joueur->symbole);
+        printf("C'est au tour de %s (%s%c%s).\n", joueur->pseudo, joueur->couleur, joueur->symbole, RESET);
         printf("Barrieres restantes : %d\n", joueur->barrieres_restantes);
         printf("Choisissez une action :\n");
         printf("1. Deplacer\n");
@@ -516,7 +524,9 @@ void entrer_pseudos(Joueur joueurs[], int nombre_joueurs) {
 // Fonction pour permettre aux joueurs de choisir leur pion
 void choisir_pions(Joueur joueurs[], int nombre_joueurs) {
     char symboles_disponibles[] = {'X', 'O', '@', '#', '$', '%', '&', '*', '!', '?'};
+    const char *couleurs_disponibles[] = {ROUGE, VERT, JAUNE, BLEU, MAGENTA, CYAN};
     int nombre_symboles = sizeof(symboles_disponibles) / sizeof(symboles_disponibles[0]);
+    int nombre_couleurs = sizeof(couleurs_disponibles) / sizeof(couleurs_disponibles[0]);
 
     for(int i = 0; i < nombre_joueurs; i++) {
         while(1) {
@@ -565,6 +575,13 @@ void choisir_pions(Joueur joueurs[], int nombre_joueurs) {
 
             if(symbole_valide) {
                 joueurs[i].symbole = symbole_choisi;
+                // Attribuer une couleur disponible
+                if (i < nombre_couleurs) {
+                    joueurs[i].couleur = couleurs_disponibles[i];
+                } else {
+                    // Si plus de couleurs disponibles, réutiliser depuis le début
+                    joueurs[i].couleur = couleurs_disponibles[i % nombre_couleurs];
+                }
                 break;
             } else {
                 printf("Symbole invalide ou deja pris. Reessayez.\n");
@@ -605,29 +622,48 @@ void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueu
 
     // Sauvegarder les joueurs
     for (int i = 0; i < nombre_joueurs; i++) {
-        fprintf(fichier, "%s %c %d %d %d %d %d\n",
+        // Obtenir le nom de la couleur
+        const char *nom_couleur = "";
+        if (joueurs[i].couleur == ROUGE)
+            nom_couleur = "ROUGE";
+        else if (joueurs[i].couleur == VERT)
+            nom_couleur = "VERT";
+        else if (joueurs[i].couleur == JAUNE)
+            nom_couleur = "JAUNE";
+        else if (joueurs[i].couleur == BLEU)
+            nom_couleur = "BLEU";
+        else if (joueurs[i].couleur == MAGENTA)
+            nom_couleur = "MAGENTA";
+        else if (joueurs[i].couleur == CYAN)
+            nom_couleur = "CYAN";
+        else
+            nom_couleur = "RESET"; // Par défaut
+
+        fprintf(fichier, "%s %c %d %d %d %d %d %d %s\n",
                 joueurs[i].pseudo,               // Pseudo du joueur
                 joueurs[i].symbole,              // Symbole du joueur
                 joueurs[i].x,                    // Coordonnée x
                 joueurs[i].y,                    // Coordonnée y
                 joueurs[i].barrieres_restantes,  // Barrières restantes
                 joueurs[i].ligne_cible,          // Ligne cible
-                joueurs[i].colonne_cible);       // Colonne cible
+                joueurs[i].colonne_cible,        // Colonne cible
+                joueurs[i].score,                // Score du joueur
+                nom_couleur);                    // Nom de la couleur
     }
 
-    // Sauvegarder les murs placés : format x1 y1 x2 y2 pour chaque mur
-    for (int i = 0; i < TAILLE; i++) {
-        for (int j = 0; j < TAILLE - 1; j++) {
+    // Sauvegarder les murs placés : format h: x y ou v: x y pour chaque mur
+    for (int i = 0; i < TAILLE + 1; i++) {
+        for (int j = 0; j < TAILLE; j++) {
             if (murs_horizontaux[i][j] == 1) {
-                fprintf(fichier, "h: %d %d\n", i, j);  // Mur horizontal entre (i,j) et (i,j+1)
+                fprintf(fichier, "h: %d %d\n", i, j);  // Mur horizontal
             }
         }
     }
 
-    for (int i = 0; i < TAILLE - 1; i++) {
-        for (int j = 0; j < TAILLE; j++) {
+    for (int i = 0; i < TAILLE; i++) {
+        for (int j = 0; j < TAILLE + 1; j++) {
             if (murs_verticaux[i][j] == 1) {
-                fprintf(fichier, "v: %d %d\n", i, j);  // Mur vertical entre (i,j) et (i+1,j)
+                fprintf(fichier, "v: %d %d\n", i, j);  // Mur vertical
             }
         }
     }
@@ -636,8 +672,9 @@ void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueu
     fprintf(fichier, "%d\n", joueur_actuel);
 
     fclose(fichier);
-    printf("Jeu sauvegarde dans %s.\n", nom_fichier);
+    printf("Jeu sauvegardé dans %s.\n", nom_fichier);
 }
+
 
 
 int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel) {
@@ -652,14 +689,47 @@ int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, 
 
     // Charger les joueurs
     for (int i = 0; i < *nombre_joueurs; i++) {
-        fscanf(fichier, "%s %c %d %d %d %d %d\n",
-               joueurs[i].pseudo,
-               &joueurs[i].symbole,
-               &joueurs[i].x,
-               &joueurs[i].y,
-               &joueurs[i].barrieres_restantes,
-               &joueurs[i].ligne_cible,
-               &joueurs[i].colonne_cible);
+        char pseudo[50];
+        char symbole;
+        int x, y, barrieres_restantes, ligne_cible, colonne_cible, score;
+        char nom_couleur[20];
+
+        fscanf(fichier, "%s %c %d %d %d %d %d %d %s\n",
+               pseudo,
+               &symbole,
+               &x,
+               &y,
+               &barrieres_restantes,
+               &ligne_cible,
+               &colonne_cible,
+               &score,
+               nom_couleur);
+
+        // Restaurer les informations du joueur
+        strcpy(joueurs[i].pseudo, pseudo);
+        joueurs[i].symbole = symbole;
+        joueurs[i].x = x;
+        joueurs[i].y = y;
+        joueurs[i].barrieres_restantes = barrieres_restantes;
+        joueurs[i].ligne_cible = ligne_cible;
+        joueurs[i].colonne_cible = colonne_cible;
+        joueurs[i].score = score;
+
+        // Restaurer la couleur en fonction du nom
+        if (strcmp(nom_couleur, "ROUGE") == 0)
+            joueurs[i].couleur = ROUGE;
+        else if (strcmp(nom_couleur, "VERT") == 0)
+            joueurs[i].couleur = VERT;
+        else if (strcmp(nom_couleur, "JAUNE") == 0)
+            joueurs[i].couleur = JAUNE;
+        else if (strcmp(nom_couleur, "BLEU") == 0)
+            joueurs[i].couleur = BLEU;
+        else if (strcmp(nom_couleur, "MAGENTA") == 0)
+            joueurs[i].couleur = MAGENTA;
+        else if (strcmp(nom_couleur, "CYAN") == 0)
+            joueurs[i].couleur = CYAN;
+        else
+            joueurs[i].couleur = RESET; // Par défaut
     }
 
     // Initialiser les matrices des murs
@@ -684,6 +754,7 @@ int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, 
     printf("Jeu chargé depuis %s.\n", nom_fichier);
     return 1;
 }
+
 
 
 void quitter_jeu(Joueur joueurs[], int nombre_joueurs, Joueur *joueur) {
