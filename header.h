@@ -40,7 +40,7 @@ int lettre_vers_indice(char lettre);
 char indice_vers_lettre(int indice);
 void initialiser_plateau();
 void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueurs, int joueur_actuel);
-int mouvement_valide(Joueur *joueur, int x, int y, Joueur joueurs[], int nombre_joueurs);
+int mouvement_valide(Joueur *joueur, int x, int y);
 void deplacer_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
 int existe_chemin(Joueur joueur, int ligne_cible, int colonne_cible);
 int mur_valide(int x[], int y[], Joueur joueurs[], int nombre_joueurs);
@@ -153,96 +153,33 @@ void afficher_plateau(Joueur joueurs[], int nombre_joueurs) {
 }
 
 // Fonction pour vérifier si le déplacement est valide
-int mouvement_valide(Joueur *joueur, int x, int y, Joueur joueurs[], int nombre_joueurs) {
+int mouvement_valide(Joueur *joueur, int x, int y) {
     // Vérifier si la case est dans le plateau
     if(x < 0 || x >= TAILLE || y < 0 || y >= TAILLE)
         return 0;
-
-    int dx = x - joueur->x;
-    int dy = y - joueur->y;
-    int distance = abs(dx) + abs(dy);
-
-    if(distance == 1) {
-        // Déplacement vers une case adjacente
-        // Vérifier s'il y a un mur entre les deux cases
-        if(dx != 0) { // Déplacement horizontal
-            if(dx > 0 && murs_verticaux[joueur->y][joueur->x + 1]) // Vers la droite
-                return 0;
-            if(dx < 0 && murs_verticaux[joueur->y][joueur->x]) // Vers la gauche
-                return 0;
-        } else { // Déplacement vertical
-            if(dy > 0 && murs_horizontaux[joueur->y + 1][joueur->x]) // Vers le haut
-                return 0;
-            if(dy < 0 && murs_horizontaux[joueur->y][joueur->x]) // Vers le bas
-                return 0;
-        }
-        // Vérifier si un autre joueur est déjà sur la case
-        for(int i = 0; i < nombre_joueurs; i++) {
-            if(&joueurs[i] != joueur && joueurs[i].x == x && joueurs[i].y == y) {
-                return 0; // Case occupée
-            }
-        }
-        return 1; // Mouvement valide
-    }
-    else if(distance == 2 && (dx == 0 || dy == 0)) {
-        // Tentative de saut par-dessus un joueur
-        int mid_x = joueur->x + dx / 2;
-        int mid_y = joueur->y + dy / 2;
-
-        // Vérifier qu'il y a un joueur sur la case intermédiaire
-        int joueur_present = 0;
-        for(int i = 0; i < nombre_joueurs; i++) {
-            if(&joueurs[i] != joueur && joueurs[i].x == mid_x && joueurs[i].y == mid_y) {
-                joueur_present = 1;
-                break;
-            }
-        }
-        if(!joueur_present)
-            return 0; // Pas de joueur à sauter
-
-        // Vérifier qu'il n'y a pas de mur entre le joueur actuel et la case intermédiaire
-        if(dx != 0) { // Déplacement horizontal
-            if(dx > 0 && murs_verticaux[joueur->y][joueur->x + 1]) // Vers la droite
-                return 0;
-            if(dx < 0 && murs_verticaux[joueur->y][joueur->x]) // Vers la gauche
-                return 0;
-            // Vérifier qu'il n'y a pas de mur entre la case intermédiaire et la case cible
-            if(dx > 0 && murs_verticaux[mid_y][mid_x + 1]) // Vers la droite
-                return 0;
-            if(dx < 0 && murs_verticaux[mid_y][mid_x]) // Vers la gauche
-                return 0;
-        } else { // Déplacement vertical
-            if(dy > 0 && murs_horizontaux[joueur->y + 1][joueur->x]) // Vers le haut
-                return 0;
-            if(dy < 0 && murs_horizontaux[joueur->y][joueur->x]) // Vers le bas
-                return 0;
-            // Vérifier qu'il n'y a pas de mur entre la case intermédiaire et la case cible
-            if(dy > 0 && murs_horizontaux[mid_y + 1][mid_x]) // Vers le haut
-                return 0;
-            if(dy < 0 && murs_horizontaux[mid_y][mid_x]) // Vers le bas
-                return 0;
-        }
-        // Vérifier si la case cible est libre
-        for(int i = 0; i < nombre_joueurs; i++) {
-            if(&joueurs[i] != joueur && joueurs[i].x == x && joueurs[i].y == y) {
-                return 0; // Case cible occupée
-            }
-        }
-        return 1; // Mouvement valide (saut par-dessus un joueur)
-    }
-    else {
-        // Mouvement invalide
+    // Vérifier si la case est adjacente
+    if(abs(joueur->x - x) + abs(joueur->y - y) != 1)
         return 0;
+    // Vérifier s'il y a un mur entre les deux cases
+    if(joueur->x != x) { // Déplacement horizontal
+        if(joueur->x < x && murs_verticaux[joueur->y][joueur->x + 1]) // Vers la droite
+            return 0;
+        if(joueur->x > x && murs_verticaux[joueur->y][joueur->x]) // Vers la gauche
+            return 0;
+    } else { // Déplacement vertical
+        if(joueur->y < y && murs_horizontaux[joueur->y + 1][joueur->x]) // Vers le haut
+            return 0;
+        if(joueur->y > y && murs_horizontaux[joueur->y][joueur->x]) // Vers le bas
+            return 0;
     }
+    return 1;
 }
-
 
 // Fonction pour déplacer le joueur
 void deplacer_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
     while(1) {
         char saisie[10];
         printf("Entrez les coordonnees (ex: B3): ");
-        fflush(stdout); // Assurer l'affichage avant la saisie
         fgets(saisie, sizeof(saisie), stdin);
         // Enlever le caractère de nouvelle ligne
         saisie[strcspn(saisie, "\n")] = '\0';
@@ -261,7 +198,20 @@ void deplacer_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
             printf("Coordonnees invalides. Essayez a nouveau.\n");
             continue;
         }
-        if(mouvement_valide(joueur, x, y, joueurs, nombre_joueurs)) {
+        if(mouvement_valide(joueur, x, y)) {
+            // Vérifier si un autre joueur est déjà sur la case
+            int occupee = 0;
+            for(int i = 0; i < nombre_joueurs; i++) {
+                if(joueurs[i].x == x && joueurs[i].y == y) {
+                    occupee = 1;
+                    break;
+                }
+            }
+            if(occupee) {
+                printf("Case occupee. Essayez une autre case.\n");
+                continue;
+            }
+
             joueur->x = x;
             joueur->y = y;
             break;
@@ -542,14 +492,15 @@ int tour_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
             printf("Tour passe.\n");
             break;
         } else if(choix == 4) {
-            quitter_jeu(joueurs, nombre_joueurs, joueurs);
+            quitter_jeu(joueurs, nombre_joueurs, joueurs); // Appel de la fonction quitter_jeu
+            //printf("%s (%c) a quitte le jeu.\n", joueur->pseudo, joueur->symbole);
+            //exit(0); // Quitter le programme
         } else {
             printf("Choix invalide. Essayez a nouveau.\n");
         }
     }
     return 0;
 }
-
 
 // Fonction pour permettre aux joueurs de saisir leur pseudo
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs) {
@@ -680,19 +631,6 @@ void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueu
         }
     }
 
-    // Sauvegarder l'état du plateau : chaque ligne du plateau avec '1' pour les joueurs et '0' pour les cases vides
-    /*/for (int i = 0; i < TAILLE; i++) {
-        for (int j = 0; j < TAILLE; j++) {
-            if (plateau[i][j] != 0) {
-                // Si une case est occupée par un joueur, on sauvegarde l'ID du joueur (par exemple, par son symbole)
-                fprintf(fichier, "1 ");
-            } else {
-                fprintf(fichier, "0 ");
-            }
-        }
-        fprintf(fichier, "\n");
-    }/*/
-
     // Sauvegarder le joueur actuel (index du joueur en cours)
     fprintf(fichier, "%d\n", joueur_actuel);
 
@@ -700,67 +638,7 @@ void sauvegarder_jeu(const char *nom_fichier, Joueur joueurs[], int nombre_joueu
     printf("Jeu sauvegarde dans %s.\n", nom_fichier);
 }
 
-/*/
-int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel) {
-    FILE *fichier = fopen(nom_fichier, "r");
-    if (!fichier) {
-        perror("Erreur lors de l'ouverture du fichier de sauvegarde");
-        return 0;
-    }
 
-    // Charger le nombre de joueurs
-    fscanf(fichier, "%d\n", nombre_joueurs);
-
-    // Charger les joueurs
-    for (int i = 0; i < *nombre_joueurs; i++) {
-        fscanf(fichier, "%s %c %d %d %d %d %d\n",
-               joueurs[i].pseudo,               // Pseudo du joueur
-               &joueurs[i].symbole,              // Symbole du joueur
-               &joueurs[i].x,                    // Coordonnée x
-               &joueurs[i].y,                    // Coordonnée y
-               &joueurs[i].barrieres_restantes,  // Barrières restantes
-               &joueurs[i].ligne_cible,          // Ligne cible
-               &joueurs[i].colonne_cible);       // Colonne cible
-    }
-
-    // Charger l'état du plateau
-    for (int i = 0; i < TAILLE; i++) {
-        for (int j = 0; j < TAILLE; j++) {
-            fscanf(fichier, " %c", &plateau[i][j]);
-            // Si un joueur est présent sur cette case, on le marque
-            if (plateau[i][j] != '0' && plateau[i][j] != ' ') {
-                // Si la case contient un joueur, par exemple '1' pour un joueur
-                // On devra attribuer le bon joueur selon l'état du plateau
-            }
-        }
-    }
-
-    // Charger les murs horizontaux
-    for (int i = 0; i < TAILLE; i++) {
-        for (int j = 0; j < TAILLE - 1; j++) {
-            int mur;
-            fscanf(fichier, "%d", &mur);
-            murs_horizontaux[i][j] = mur;
-        }
-    }
-
-    // Charger les murs verticaux
-    for (int i = 0; i < TAILLE - 1; i++) {
-        for (int j = 0; j < TAILLE; j++) {
-            int mur;
-            fscanf(fichier, "%d", &mur);
-            murs_verticaux[i][j] = mur;
-        }
-    }
-    afficher_plateau(joueurs, *nombre_joueurs);
-
-
-    // Charger le joueur actuel
-    fscanf(fichier, "%d\n", joueur_actuel);
-
-    fclose(fichier);
-    printf("Jeu charge depuis %s.\n", nom_fichier);
-}/*/
 int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel) {
     FILE *fichier = fopen(nom_fichier, "r");
     if (!fichier) {
@@ -802,7 +680,7 @@ int charger_jeu(const char *nom_fichier, Joueur joueurs[], int *nombre_joueurs, 
     fscanf(fichier, "%d\n", joueur_actuel);
 
     fclose(fichier);
-    printf("Jeu charge depuis %s.\n", nom_fichier);
+    printf("Jeu chargé depuis %s.\n", nom_fichier);
     return 1;
 }
 
@@ -823,6 +701,5 @@ void quitter_jeu(Joueur joueurs[], int nombre_joueurs, Joueur *joueur) {
     printf("Merci d'avoir joue ! La partie est terminee.\n");
     exit(0); // Quitte le programme
 }
-
 
 #endif //QORIDORV1_HEADER_H
