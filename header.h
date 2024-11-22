@@ -13,6 +13,11 @@
 #define TAILLE 9
 #define LARGEUR_COLONNE 6 // Largeur constante pour chaque colonne
 #define MAX_JOUEURS 4     // Nombre maximum de joueurs
+#ifdef _WIN32
+#define CLEAR_SCREEN "cls"
+#else
+#define CLEAR_SCREEN "\x1b[2J\x1b[H"
+#endif
 
 #ifdef _WIN32
 #define EFFACER "cls"
@@ -75,6 +80,7 @@ void deplacer_barriere(Joueur joueurs[], int nombre_joueurs);
 int parser_coordonnees_barriere(char *saisie, int x[], int y[]);
 int barriere_existe(int x[], int y[]);
 void retirer_barriere(int x[], int y[]);
+void afficher_titre();
 
 
 // Fonction pour convertir une lettre en indice de colonne
@@ -1212,6 +1218,23 @@ void deplacer_joueur(Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
         }
     }
 }
+
+// Fonction pour afficher un grand titre "QUORIDOR" au début avec ASCII art
+void afficher_titre() {
+    printf(CLEAR_SCREEN);
+    printf(CYAN "\n\n");
+    printf("       ____  _    _  ____  _____  _____  ____   ____  _____  \n");
+    printf("      / __ \\| |  | |/ __ \\|  __ \\|_   _|  __ \\ / __ \\|  __ \\ \n");
+    printf("     | |  | | |  | | |  | | |__) | | | | |  | | |  | | |__) |\n");
+    printf("     | |  | | |  | | |  | |  _  /  | | | |  | | |  | |  _  / \n");
+    printf("     | |__| | |__| | |__| | | \\ \\ _| |_| |__| | |__| | | \\ \\ \n");
+    printf("      \\____/ \\____/ \\____/|_|  \\_\\_____|_____/ \\____/|_|  \\_\\ \n\n\n" RESET);
+}
+
+
+
+
+
 
 
 #endif //QORIDORV1_HEADER_H

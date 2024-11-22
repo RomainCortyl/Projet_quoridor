@@ -1,9 +1,10 @@
 #include "header.h"
 
+
 int main() {
     // Initialisation du générateur de nombres aléatoires
     srand(time(NULL));
-
+    afficher_titre();
     // Menu d'accueil
     printf("%s\nBienvenue dans le jeu Quoridor !\n\n%s", ORANGE, RESET);
     int nombre_joueurs = 0;

@@ -7,4 +7,5 @@ include_directories(.)
 
 add_executable(Projet_quoridor
         header.h
-        main.c)
+        main.c
+)
