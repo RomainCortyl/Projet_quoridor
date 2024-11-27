@@ -8,4 +8,10 @@ include_directories(.)
 add_executable(Projet_quoridor
         header.h
         main.c
+        affichage.c
+        Sauvegarde.c
+        Deplacement.c
+        Barriere.c
+        Joueur.c
+        Conversion.c
 )
