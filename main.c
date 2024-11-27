@@ -96,7 +96,7 @@ int main() {
             system(EFFACER); // Nettoyer l'écran avant d'afficher le plateau final
             afficher_plateau(&jeu, joueurs, nombre_joueurs);
             printf("%s (%c) a gagne !\n", joueurs[joueur_actuel].pseudo, joueurs[joueur_actuel].symbole);
-            joueurs[joueur_actuel].score++;
+            joueurs[joueur_actuel].score+=5;
             sauvegarder_jeu("sauvegarde.txt", &jeu, joueurs, nombre_joueurs, joueur_actuel);
 
             // Afficher les scores

@@ -42,7 +42,6 @@ void sauvegarder_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], in
                 joueurs[i].ligne_cible,          // Ligne cible
                 joueurs[i].colonne_cible,        // Colonne cible
                 joueurs[i].score,                // Score du joueur
-                //joueurs[i].couleur,
                 nom_couleur);                    // Nom de la couleur
     }
 
@@ -63,8 +62,14 @@ void sauvegarder_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], in
         }
     }
 
+// Ajouter un marqueur de fin pour les murs
+    fprintf(fichier, "END_WALLS\n");
+
     // Sauvegarder le joueur actuel (index du joueur en cours)
-    fprintf(fichier, "joueur : %d\n", joueur_actuel);
+    fprintf(fichier, "%d\n", joueur_actuel);
+
+    // Sauvegarder l'état du bonus_reclame
+    fprintf(fichier, "bonus_reclame: %d\n", jeu->bonus_reclame);
 
     fclose(fichier);
     printf("Jeu sauvegarde dans %s.\n", nom_fichier);
@@ -88,7 +93,7 @@ int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *no
         int x, y, barrieres_restantes, ligne_cible, colonne_cible, score;
         char nom_couleur[20];
 
-        fscanf(fichier, "%s %c %d %d %d %d %d %d %s \n",
+        fscanf(fichier, "%s %c %d %d %d %d %d %d %s\n",
                pseudo,
                &symbole,
                &x,
@@ -108,9 +113,6 @@ int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *no
         joueurs[i].ligne_cible = ligne_cible;
         joueurs[i].colonne_cible = colonne_cible;
         joueurs[i].score = score;
-        //joueurs[i].couleur=nom_couleur;
-
-
 
         joueurs[0].couleur=ROUGE;
         joueurs[1].couleur=VERT;
@@ -123,6 +125,12 @@ int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *no
     memset(jeu->murs_verticaux, 0, sizeof(jeu->murs_verticaux));
 
     // Charger les barrières horizontales (h:) et verticales (v:)
+    char line[256];
+    while (fgets(line, sizeof(line), fichier)) {
+        if (strcmp(line, "END_WALLS\n") == 0) {
+            break; // Fin de la lecture des murs
+        }
+    }
     char type;
     int x, y;
     while (fscanf(fichier, "%c: %d %d\n", &type, &x, &y) == 3) {
@@ -134,7 +142,10 @@ int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *no
     }
 
     // Charger le joueur actuel
-    fscanf(fichier, "joueur : %d\n", joueur_actuel);
+    fscanf(fichier, "%d\n", joueur_actuel);
+
+// Charger l'état du bonus_reclame
+    fscanf(fichier, "bonus_reclame: %d\n", &(jeu->bonus_reclame));
 
     fclose(fichier);
     printf("Jeu charge depuis %s.\n", nom_fichier);

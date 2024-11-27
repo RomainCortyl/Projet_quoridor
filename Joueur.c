@@ -13,16 +13,17 @@ int a_gagne(Joueur *joueur) {
     return 0;
 }
 
-// Fonction pour gérer le tour d'un joueur
 int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
     while(1) {
-        printf("C'est au tour de %s (%s%c%s).\n", joueur->pseudo, joueur->couleur, joueur->symbole, RESET);
-        printf("Barrieres restantes : %d\n", joueur->barrieres_restantes);
+        printf("C'est au tour de %s (%s%c%s).\n\n", joueur->pseudo, joueur->couleur, joueur->symbole, RESET);
+        printf("Score actuel : %d\n", joueur->score);
+        printf("Barrieres restantes : %d\n\n", joueur->barrieres_restantes);
         printf("Choisissez une action :\n");
-        printf("1. Deplacer\n");
+        printf("1. Se deplacer\n");
         printf("2. Placer une barriere\n");
-        printf("3. Passer\n");
-        printf("4. Quitter\n");
+        printf("3. Passer votre tour\n");
+        printf("4. Quitter la partie\n");
+
         printf("Votre choix : ");
 
         int choix;
@@ -47,6 +48,7 @@ int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueu
         } else {
             printf("Choix invalide. Essayez a nouveau.\n");
         }
+
     }
     return 0;
 }

@@ -1,6 +1,7 @@
 //
 // Created by MSI on 27/11/2024.
 //
+///fonctions de conversion utiles pour convertir les sasies utilisateurs en données utilisables
 
 // Fonction pour convertir une lettre en indice de colonne
 #include "header.h"

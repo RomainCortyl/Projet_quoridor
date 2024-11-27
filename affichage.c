@@ -14,6 +14,7 @@ void initialiser_plateau(etatJeu *jeu) {
             if(i < TAILLE && j < TAILLE+1)
                 jeu->murs_verticaux[i][j] = 0;
         }
+    jeu->bonus_reclame = 0; // Le bonus n'a pas encore été réclamé
 }
 
 // Fonction pour afficher le plateau avec un alignement correct des lettres
@@ -59,10 +60,15 @@ void afficher_plateau(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs) {
                 }
             }
             if(!est_joueur)
-                printf("     "); // Espace vide de 5 caractères
+                if(j == 4 && i == 4 && jeu->bonus_reclame == 0) {
+                    // Afficher la case spéciale
+                    printf(" %s B %s ", MAGENTA, RESET); // Utilisez une couleur pour indiquer le bonus
+                } else {
+                    printf("     "); // Espace vide de 5 caractères
+                }
+            }
 
-        }
-        // Mur vertical à droite de la dernière case
+            // Mur vertical à droite de la dernière case
         if(jeu->murs_verticaux[i][TAILLE])
             printf("|");
         else
@@ -84,6 +90,13 @@ void afficher_plateau(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs) {
 
 }
 
+void afficher_scores(Joueur joueurs[], int nombre_joueurs) {
+    printf("\nScores actuels :\n");
+    for(int i = 0; i < nombre_joueurs; i++) {
+        printf("%s%s%s : %d points\n", joueurs[i].couleur, joueurs[i].pseudo, RESET, joueurs[i].score);
+    }
+    printf("\n");
+}
 
 // Fonction pour afficher le titre "QUORIDOR" avec ASCII art
 void afficher_titre() {
@@ -92,6 +105,6 @@ void afficher_titre() {
     printf("  ____  __  ______  ___  _______  ____  ___ \n");
     printf(" / __ \\/ / / / __ \\/ _ \\/  _/ _ \/ __ \\/ _ \\\n");
     printf("/ /_/ / /_/ / /_/ / , _// // // / /_/ / , _/\n");
-    printf("\\___\\_\\____/\\____/_/|_/___/____/\\____/_/|_| \n\n\n" RESET);
+    printf("\\___\\_\\____/\\____/_/|_/___/____/\\____/_/|_| \n\n" RESET);
 }
 
