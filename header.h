@@ -10,6 +10,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
+#include <windows.h> // Pour Sleep() sous Windows
+#include <conio.h>
+
 
 #define TAILLE 9
 #define LARGEUR_COLONNE 6 // Largeur constante pour chaque colonne
@@ -39,6 +42,8 @@
 #define PION5 158
 #define PION6 189
 
+#define TEMPS_MAX 30
+
 typedef struct {
     char pseudo[50]; // Pseudo du joueur
     int symbole;     // Changement de char à int
@@ -49,6 +54,7 @@ typedef struct {
     int colonne_cible; // Pour les joueurs se déplaçant horizontalement
     int score;         // Score du joueur
     const char *couleur; // Code de couleur ANSI du joueur
+    double temps_total;
 } Joueur;
 
 // Structure pour l'état du jeu
@@ -87,8 +93,11 @@ void placer_barriere_aux(etatJeu *jeu, int x[], int y[]);
 void retirer_barriere(etatJeu *jeu, int x[], int y[]);       //barriere.c
 int a_gagne(Joueur *joueur);
 int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
+void appliquer_penalite(Joueur joueurs[], int nombre_joueurs);
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs);
 void choisir_pions(Joueur joueurs[], int nombre_joueurs);
 int demander_nombre_joueurs();                                  //joueur.c
+
+int lancer_timer();
 
 #endif //QORIDORV1_HEADER_H

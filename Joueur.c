@@ -14,44 +14,104 @@ int a_gagne(Joueur *joueur) {
 }
 
 int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
-    while(1) {
-        printf("C'est au tour de %s (%s%c%s).\n\n", joueur->pseudo, joueur->couleur, joueur->symbole, RESET);
-        printf("Score actuel : %d\n", joueur->score);
-        printf("Barrieres restantes : %d\n\n", joueur->barrieres_restantes);
-        printf("Choisissez une action :\n");
-        printf("1. Se deplacer\n");
-        printf("2. Placer une barriere\n");
-        printf("3. Passer votre tour\n");
-        printf("4. Quitter la partie\n");
+    clock_t debut_temps = clock(); // Enregistre le temps de début du tour
+    int penalite = 1; // Pénalité de 1 point si le joueur dépasse le temps imparti
+    int choix = -1;
 
+    // Afficher les options au joueur
+    printf("\nC'est au tour de %s (%s%c%s).\n\n", joueur->pseudo, joueur->couleur, joueur->symbole, RESET);
+    printf("Score actuel : %d\n", joueur->score);
+    printf("Barrieres restantes : %d\n\n", joueur->barrieres_restantes);
+    printf("Choisissez une action :\n");
+    printf("1. Se deplacer\n");
+    printf("2. Placer une barriere\n");
+    printf("3. Passer votre tour\n");
+    printf("4. Quitter la partie\n");
+
+    while (1) {
+        clock_t temps_ecoule = (clock() - debut_temps) / CLOCKS_PER_SEC;
+        int temps_restant = TEMPS_MAX - temps_ecoule;
+
+        if (temps_ecoule >= TEMPS_MAX) {
+            printf("\nTemps écoulé ! Vous avez pris trop de temps pour jouer.\n");
+            joueur->score -= penalite;
+            if (joueur->score < 0) {
+                joueur->score = 0; // S'assurer que le score ne devienne pas négatif
+            }
+            printf("Vous avez été pénalisé de %d point(s). Votre score est maintenant de %d.\n", penalite, joueur->score);
+            return 0; // Fin du tour pour ce joueur
+        }
+
+        // Afficher le temps restant
+        printf("\rTemps restant : %d secondes. ", temps_restant);
+        fflush(stdout); // Assurer l'affichage correct
         printf("Votre choix : ");
 
-        int choix;
-        if(scanf("%d", &choix) != 1) {
-            printf("Entree invalide. Essayez a nouveau.\n");
-            while(getchar() != '\n'); // Vider le tampon d'entrée
-            continue;
-        }
-        while(getchar() != '\n'); // Vider le tampon d'entrée
+        // Attendre l'entrée utilisateur pendant que le temps est compté
+        if (_kbhit()) { // Fonction disponible sous Windows avec <conio.h>, pour Unix, une autre solution est nécessaire
+            scanf("%d", &choix);
+            while (getchar() != '\n'); // Vider le tampon d'entrée
 
-        if(choix == 1) {
+            if (choix >= 1 && choix <= 4) {
+                break; // Quitter la boucle si une entrée valide est faite
+            } else {
+                printf("\nChoix invalide. Essayez a nouveau.\n");
+            }
+        }
+
+#ifdef _WIN32
+        Sleep(1000); // Attendre 1 seconde
+#else
+        sleep(1); // Attendre 1 seconde
+#endif
+    }
+
+    // Exécuter l'action choisie
+    switch (choix) {
+        case 1:
             deplacer_joueur(jeu, joueur, joueurs, nombre_joueurs);
             break;
-        } else if(choix == 2) {
+        case 2:
             placer_mur(jeu, joueur, joueurs, nombre_joueurs);
             break;
-        } else if(choix == 3) {
+        case 3:
             printf("Tour passe.\n");
             break;
-        } else if(choix == 4) {
+        case 4:
             quitter_jeu(jeu, joueurs, nombre_joueurs, joueur); // Appel de la fonction quitter_jeu
-        } else {
-            printf("Choix invalide. Essayez a nouveau.\n");
-        }
-
+            break;
+        default:
+            break;
     }
-    return 0;
+
+    return 0; // Fin du tour
 }
+
+void appliquer_penalite(Joueur joueurs[], int nombre_joueurs) {
+    // Fonction déjà présente dans score.c qui peut être utilisée pour appliquer une pénalité si nécessaire
+    int joueur_penalise = 0;
+    double max_temps = joueurs[0].temps_total;
+
+    // Trouver le joueur ayant le plus grand temps total
+    for (int i = 1; i < nombre_joueurs; i++) {
+        if (joueurs[i].temps_total > max_temps) {
+            max_temps = joueurs[i].temps_total;
+            joueur_penalise = i;
+        }
+    }
+
+    // Appliquer la pénalité
+    printf("Le joueur %s a passe le plus de temps (%.2f secondes) et sera penalise de 2 points.\n",
+           joueurs[joueur_penalise].pseudo, max_temps);
+
+    joueurs[joueur_penalise].score -= 2;
+
+    // Vérifier si le score devient négatif
+    if (joueurs[joueur_penalise].score < 0) {
+        joueurs[joueur_penalise].score = 0;
+    }
+}
+
 
 // Fonction pour permettre aux joueurs de saisir leur pseudo
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs) {
