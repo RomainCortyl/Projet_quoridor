@@ -68,14 +68,18 @@ typedef struct {
 void afficher_plateau(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs);
 void afficher_titre();
 void initialiser_plateau(etatJeu *jeu);                                         //affichage.c
+
 int lettre_vers_indice(char lettre);
 char indice_vers_lettre(int indice);                                  //conversion.c
+
 void quitter_jeu(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs, Joueur *joueur);
 void sauvegarder_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int nombre_joueurs, int joueur_actuel);
 int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *nombre_joueurs, int *joueur_actuel);            //Sauvegarde.c
+
 int mouvement_valide(etatJeu *jeu, Joueur *joueur, int x, int y, Joueur joueurs[], int nombre_joueurs);
 int existe_chemin(etatJeu *jeu, Joueur joueur, int ligne_cible, int colonne_cible);
 void deplacer_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs);           //Deplacement.c
+
 int mur_valide(etatJeu *jeu, int x[], int y[], Joueur joueurs[], int nombre_joueurs);
 void placer_mur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
 void deplacer_barriere(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs);
@@ -83,6 +87,7 @@ int parser_coordonnees_barriere(char *saisie, int x[], int y[]);
 int barriere_existe(etatJeu *jeu, int x[], int y[]);
 void placer_barriere_aux(etatJeu *jeu, int x[], int y[]);
 void retirer_barriere(etatJeu *jeu, int x[], int y[]);       //barriere.c
+
 int a_gagne(Joueur *joueur);
 int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs);
