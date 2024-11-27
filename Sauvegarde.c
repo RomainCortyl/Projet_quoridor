@@ -42,6 +42,7 @@ void sauvegarder_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], in
                 joueurs[i].ligne_cible,          // Ligne cible
                 joueurs[i].colonne_cible,        // Colonne cible
                 joueurs[i].score,                // Score du joueur
+                //joueurs[i].couleur,
                 nom_couleur);                    // Nom de la couleur
     }
 
@@ -63,7 +64,7 @@ void sauvegarder_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], in
     }
 
     // Sauvegarder le joueur actuel (index du joueur en cours)
-    fprintf(fichier, "%d\n", joueur_actuel);
+    fprintf(fichier, "joueur : %d\n", joueur_actuel);
 
     fclose(fichier);
     printf("Jeu sauvegarde dans %s.\n", nom_fichier);
@@ -87,7 +88,7 @@ int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *no
         int x, y, barrieres_restantes, ligne_cible, colonne_cible, score;
         char nom_couleur[20];
 
-        fscanf(fichier, "%s %c %d %d %d %d %d %d %s\n",
+        fscanf(fichier, "%s %c %d %d %d %d %d %d %s \n",
                pseudo,
                &symbole,
                &x,
@@ -107,22 +108,14 @@ int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *no
         joueurs[i].ligne_cible = ligne_cible;
         joueurs[i].colonne_cible = colonne_cible;
         joueurs[i].score = score;
+        //joueurs[i].couleur=nom_couleur;
 
-        // Restaurer la couleur en fonction du nom
-        if (strcmp(nom_couleur, "ROUGE") == 0)
-            joueurs[i].couleur = ROUGE;
-        else if (strcmp(nom_couleur, "VERT") == 0)
-            joueurs[i].couleur = VERT;
-        else if (strcmp(nom_couleur, "JAUNE") == 0)
-            joueurs[i].couleur = JAUNE;
-        else if (strcmp(nom_couleur, "BLEU") == 0)
-            joueurs[i].couleur = BLEU;
-        else if (strcmp(nom_couleur, "MAGENTA") == 0)
-            joueurs[i].couleur = MAGENTA;
-        else if (strcmp(nom_couleur, "CYAN") == 0)
-            joueurs[i].couleur = CYAN;
-        else
-            joueurs[i].couleur = RESET; // Par défaut
+
+
+        joueurs[0].couleur=ROUGE;
+        joueurs[1].couleur=VERT;
+        joueurs[2].couleur=JAUNE;
+        joueurs[3].couleur=BLEU;
     }
 
     // Initialiser les matrices des murs
@@ -141,7 +134,7 @@ int charger_jeu(const char *nom_fichier, etatJeu *jeu, Joueur joueurs[], int *no
     }
 
     // Charger le joueur actuel
-    fscanf(fichier, "%d\n", joueur_actuel);
+    fscanf(fichier, "joueur : %d\n", joueur_actuel);
 
     fclose(fichier);
     printf("Jeu charge depuis %s.\n", nom_fichier);
