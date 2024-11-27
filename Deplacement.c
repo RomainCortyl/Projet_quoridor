@@ -230,6 +230,12 @@ void deplacer_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_
         if(mouvement_valide(jeu, joueur, x, y, joueurs, nombre_joueurs)) {
             joueur->x = x;
             joueur->y = y;
+
+                if(joueur->x == 4 && joueur->y == 4 && jeu->bonus_reclame == 0) {
+                    joueur->score += 2; // Ajouter 2 points bonus
+                    jeu->bonus_reclame = 1; // Marquer le bonus comme réclamé
+                    printf("Felicitations %s ! Vous avez atteint la case speciale et gagnez 2 points bonus !\n", joueur->pseudo);
+                }
             break;
         } else {
             printf("Deplacement invalide.\n");

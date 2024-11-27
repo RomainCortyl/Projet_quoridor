@@ -208,7 +208,7 @@ void deplacer_barriere(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs) {
         // Retirer temporairement la barrière
         retirer_barriere(jeu, x, y);
 
-        // Demander les nouvelles coordonnées
+        /// Demander les nouvelles coordonnées
         printf("Entrez les nouvelles coordonnees pour placer la barriere (ex: D5D6E5E6): ");
         fgets(saisie, sizeof(saisie), stdin);
         // Enlever le caractère de nouvelle ligne

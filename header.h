@@ -56,6 +56,7 @@ typedef struct {
     char plateau[TAILLE][TAILLE]; // Plateau de jeu
     int murs_horizontaux[TAILLE+1][TAILLE]; // Murs horizontaux
     int murs_verticaux[TAILLE][TAILLE+1];   // Murs verticaux
+    int bonus_reclame; // 0 si le bonus n'est pas réclamé, 1 si réclamé
 } etatJeu;
 
 // Suppression des variables globales (déjà incluses dans etatJeu)
@@ -68,6 +69,7 @@ typedef struct {
 void afficher_plateau(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs);
 void afficher_titre();
 void initialiser_plateau(etatJeu *jeu);                                         //affichage.c
+void afficher_scores(Joueur joueurs[], int nombre_joueurs);
 int lettre_vers_indice(char lettre);
 char indice_vers_lettre(int indice);                                  //conversion.c
 void quitter_jeu(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs, Joueur *joueur);
@@ -88,9 +90,5 @@ int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueu
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs);
 void choisir_pions(Joueur joueurs[], int nombre_joueurs);
 int demander_nombre_joueurs();                                  //joueur.c
-
-
-
-
 
 #endif //QORIDORV1_HEADER_H
