@@ -98,7 +98,7 @@ void afficher_scores(Joueur joueurs[], int nombre_joueurs) {
     printf("\n");
 }
 
-// Fonction pour afficher le titre "QUORIDOR" avec ASCII art
+// Fonction pour afficher le titre "QUORIDOR"
 void afficher_titre() {
     printf(CLEAR_SCREEN);
     printf(CYAN "\n\n");

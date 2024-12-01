@@ -33,12 +33,12 @@ int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueu
         int temps_restant = TEMPS_MAX - temps_ecoule;
 
         if (temps_ecoule >= TEMPS_MAX) {
-            printf("\nTemps écoulé ! Vous avez pris trop de temps pour jouer.\n");
+            printf("\nTemps ecoule ! Vous avez pris trop de temps pour jouer.\n");
             joueur->score -= penalite;
             if (joueur->score < 0) {
                 joueur->score = 0; // S'assurer que le score ne devienne pas négatif
             }
-            printf("Vous avez été pénalisé de %d point(s). Votre score est maintenant de %d.\n", penalite, joueur->score);
+            printf("Vous avez ete penalise de %d point(s). Votre score est maintenant de %d.\n", penalite, joueur->score);
             return 0; // Fin du tour pour ce joueur
         }
 

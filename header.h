@@ -65,13 +65,7 @@ typedef struct {
     int bonus_reclame; // 0 si le bonus n'est pas réclamé, 1 si réclamé
 } etatJeu;
 
-// Suppression des variables globales (déjà incluses dans etatJeu)
-// char plateau[TAILLE][TAILLE]; // Supprimé
-// int murs_horizontaux[TAILLE+1][TAILLE]; // Supprimé
-// int murs_verticaux[TAILLE][TAILLE+1];   // Supprimé
-
-// Prototypes des fonctions avec etat
-//Jeu *jeu ajouté
+// Prototypes des fonctions
 void afficher_plateau(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs);
 void afficher_titre();
 void initialiser_plateau(etatJeu *jeu);                                         //affichage.c
@@ -97,7 +91,6 @@ void appliquer_penalite(Joueur joueurs[], int nombre_joueurs);
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs);
 void choisir_pions(Joueur joueurs[], int nombre_joueurs);
 int demander_nombre_joueurs();                                  //joueur.c
-
-int lancer_timer();
+int lancer_timer(clock_t debut_temps);
 
 #endif //QORIDORV1_HEADER_H

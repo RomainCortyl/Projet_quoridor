@@ -3,6 +3,89 @@
 //
 #include "header.h"
 
+// Fonction pour placer un mur
+void placer_mur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
+    if(joueur->barrieres_restantes <= 0) {
+        char choix;
+        printf("Vous n'avez plus de barrieres.\n");
+        printf("Voulez-vous deplacer une barriere existante ? (O/N) : ");
+        scanf(" %c", &choix);
+        while(getchar() != '\n'); // Vider le tampon d'entrée
+
+        if(toupper(choix) == 'O') {
+            deplacer_barriere(jeu, joueurs, nombre_joueurs);
+        } else {
+            printf("Action annulee.\n");
+        }
+        return;
+    }
+    while(1) {
+        char saisie[40];
+        printf("Entrez les coordonnees (ex: B3B4C3C4): ");
+        fflush(stdout); // Assurer l'affichage avant la saisie
+        fgets(saisie, sizeof(saisie), stdin);
+        // Enlever le caractère de nouvelle ligne
+        saisie[strcspn(saisie, "\n")] = '\0';
+
+        // Vérifier la longueur de l'entrée
+        if(strlen(saisie) < 8 || strlen(saisie) > 10) {
+            printf("Entree invalide. Essayez a nouveau.\n");
+            continue;
+        }
+
+        char coord1[3], coord2[3], coord3[3], coord4[3];
+        strncpy(coord1, saisie, 2);
+        coord1[2] = '\0';
+        strncpy(coord2, &saisie[2], 2);
+        coord2[2] = '\0';
+        strncpy(coord3, &saisie[4], 2);
+        coord3[2] = '\0';
+        strncpy(coord4, &saisie[6], 2);
+        coord4[2] = '\0';
+
+        int x[4], y[4];
+        x[0] = lettre_vers_indice(coord1[0]);
+        y[0] = atoi(&coord1[1]) - 1;
+        x[1] = lettre_vers_indice(coord2[0]);
+        y[1] = atoi(&coord2[1]) - 1;
+        x[2] = lettre_vers_indice(coord3[0]);
+        y[2] = atoi(&coord3[1]) - 1;
+        x[3] = lettre_vers_indice(coord4[0]);
+        y[3] = atoi(&coord4[1]) - 1;
+
+        int coords_valides = 1;
+        for(int i = 0; i < 4; i++) {
+            if(x[i] == -1 || y[i] < 0 || y[i] >= TAILLE) {
+                coords_valides = 0;
+                break;
+            }
+        }
+        if(!coords_valides) {
+            printf("Coordonnees invalides. Essayez a nouveau.\n");
+            continue;
+        }
+
+        if(mur_valide(jeu, x, y, joueurs, nombre_joueurs)) {
+            // Placer le mur définitivement
+            if(y[0] == y[1]) { // Mur vertical
+                int x_pos = x[0] + 1;
+                int minY = (y[0] < y[2]) ? y[0] : y[2];
+                jeu->murs_verticaux[minY][x_pos] = 1;
+                jeu->murs_verticaux[minY + 1][x_pos] = 1;
+            } else if(x[0] == x[1]) { // Mur horizontal
+                int minX = (x[0] < x[2]) ? x[0] : x[2];
+                int y_pos = y[0] + 1;
+                jeu->murs_horizontaux[y_pos][minX] = 1;
+                jeu->murs_horizontaux[y_pos][minX + 1] = 1;
+            }
+            joueur->barrieres_restantes--;
+            break;
+        } else {
+            printf("Placement invalide. Soit le mur est deja present, soit il bloque le chemin d'un joueur. Essayez a nouveau.\n");
+        }
+    }
+}
+
 // Fonction pour vérifier si le placement du mur est valide
 int mur_valide(etatJeu *jeu, int x[], int y[], Joueur joueurs[], int nombre_joueurs) {
     // Vérifier que les quatre points forment un mur valide de taille 2
@@ -95,88 +178,6 @@ int mur_valide(etatJeu *jeu, int x[], int y[], Joueur joueurs[], int nombre_joue
     return 1; // Placement valide
 }
 
-// Fonction pour placer un mur
-void placer_mur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs) {
-    if(joueur->barrieres_restantes <= 0) {
-        char choix;
-        printf("Vous n'avez plus de barrieres.\n");
-        printf("Voulez-vous deplacer une barriere existante ? (O/N) : ");
-        scanf(" %c", &choix);
-        while(getchar() != '\n'); // Vider le tampon d'entrée
-
-        if(toupper(choix) == 'O') {
-            deplacer_barriere(jeu, joueurs, nombre_joueurs);
-        } else {
-            printf("Action annulee.\n");
-        }
-        return;
-    }
-    while(1) {
-        char saisie[40];
-        printf("Entrez les coordonnees (ex: B3B4C3C4): ");
-        fflush(stdout); // Assurer l'affichage avant la saisie
-        fgets(saisie, sizeof(saisie), stdin);
-        // Enlever le caractère de nouvelle ligne
-        saisie[strcspn(saisie, "\n")] = '\0';
-
-        // Vérifier la longueur de l'entrée
-        if(strlen(saisie) < 8 || strlen(saisie) > 10) {
-            printf("Entree invalide. Essayez a nouveau.\n");
-            continue;
-        }
-
-        char coord1[3], coord2[3], coord3[3], coord4[3];
-        strncpy(coord1, saisie, 2);
-        coord1[2] = '\0';
-        strncpy(coord2, &saisie[2], 2);
-        coord2[2] = '\0';
-        strncpy(coord3, &saisie[4], 2);
-        coord3[2] = '\0';
-        strncpy(coord4, &saisie[6], 2);
-        coord4[2] = '\0';
-
-        int x[4], y[4];
-        x[0] = lettre_vers_indice(coord1[0]);
-        y[0] = atoi(&coord1[1]) - 1;
-        x[1] = lettre_vers_indice(coord2[0]);
-        y[1] = atoi(&coord2[1]) - 1;
-        x[2] = lettre_vers_indice(coord3[0]);
-        y[2] = atoi(&coord3[1]) - 1;
-        x[3] = lettre_vers_indice(coord4[0]);
-        y[3] = atoi(&coord4[1]) - 1;
-
-        int coords_valides = 1;
-        for(int i = 0; i < 4; i++) {
-            if(x[i] == -1 || y[i] < 0 || y[i] >= TAILLE) {
-                coords_valides = 0;
-                break;
-            }
-        }
-        if(!coords_valides) {
-            printf("Coordonnees invalides. Essayez a nouveau.\n");
-            continue;
-        }
-
-        if(mur_valide(jeu, x, y, joueurs, nombre_joueurs)) {
-            // Placer le mur définitivement
-            if(y[0] == y[1]) { // Mur vertical
-                int x_pos = x[0] + 1;
-                int minY = (y[0] < y[2]) ? y[0] : y[2];
-                jeu->murs_verticaux[minY][x_pos] = 1;
-                jeu->murs_verticaux[minY + 1][x_pos] = 1;
-            } else if(x[0] == x[1]) { // Mur horizontal
-                int minX = (x[0] < x[2]) ? x[0] : x[2];
-                int y_pos = y[0] + 1;
-                jeu->murs_horizontaux[y_pos][minX] = 1;
-                jeu->murs_horizontaux[y_pos][minX + 1] = 1;
-            }
-            joueur->barrieres_restantes--;
-            break;
-        } else {
-            printf("Placement invalide. Soit le mur est deja present, soit il bloque le chemin d'un joueur. Essayez a nouveau.\n");
-        }
-    }
-}
 
 // Fonction pour déplacer une barrière existante
 void deplacer_barriere(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs) {
@@ -204,7 +205,6 @@ void deplacer_barriere(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs) {
             printf("Aucune barriere n'existe a ces coordonnees. Essayez a nouveau.\n");
             continue;
         }
-
         // Retirer temporairement la barrière
         retirer_barriere(jeu, x, y);
 
@@ -273,7 +273,6 @@ int parser_coordonnees_barriere(char *saisie, int x[], int y[]) {
         if(x[i] == -1 || y[i] < 0 || y[i] >= TAILLE)
             return 0;
     }
-
     return 1;
 }
 
