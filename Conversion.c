@@ -3,9 +3,9 @@
 //
 ///fonctions de conversion utiles pour convertir les sasies utilisateurs en données utilisables
 
-// Fonction pour convertir une lettre en indice de colonne
 #include "header.h"
 
+// Fonction pour convertir une lettre en indice de colonne
 int lettre_vers_indice(char lettre) {
     lettre = toupper(lettre);
     if(lettre >= 'A' && lettre < 'A' + TAILLE)

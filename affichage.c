@@ -90,14 +90,6 @@ void afficher_plateau(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs) {
 
 }
 
-void afficher_scores(Joueur joueurs[], int nombre_joueurs) {
-    printf("\nScores actuels :\n");
-    for(int i = 0; i < nombre_joueurs; i++) {
-        printf("%s%s%s : %d points\n", joueurs[i].couleur, joueurs[i].pseudo, RESET, joueurs[i].score);
-    }
-    printf("\n");
-}
-
 // Fonction pour afficher le titre "QUORIDOR"
 void afficher_titre() {
     printf(CLEAR_SCREEN);

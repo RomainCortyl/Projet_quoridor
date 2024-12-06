@@ -14,5 +14,4 @@ add_executable(Projet_quoridor
         Barriere.c
         Joueur.c
         Conversion.c
-        timer.c
 )

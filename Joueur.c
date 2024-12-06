@@ -87,32 +87,6 @@ int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueu
     return 0; // Fin du tour
 }
 
-void appliquer_penalite(Joueur joueurs[], int nombre_joueurs) {
-    // Fonction déjà présente dans score.c qui peut être utilisée pour appliquer une pénalité si nécessaire
-    int joueur_penalise = 0;
-    double max_temps = joueurs[0].temps_total;
-
-    // Trouver le joueur ayant le plus grand temps total
-    for (int i = 1; i < nombre_joueurs; i++) {
-        if (joueurs[i].temps_total > max_temps) {
-            max_temps = joueurs[i].temps_total;
-            joueur_penalise = i;
-        }
-    }
-
-    // Appliquer la pénalité
-    printf("Le joueur %s a passe le plus de temps (%.2f secondes) et sera penalise de 2 points.\n",
-           joueurs[joueur_penalise].pseudo, max_temps);
-
-    joueurs[joueur_penalise].score -= 2;
-
-    // Vérifier si le score devient négatif
-    if (joueurs[joueur_penalise].score < 0) {
-        joueurs[joueur_penalise].score = 0;
-    }
-}
-
-
 // Fonction pour permettre aux joueurs de saisir leur pseudo
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs) {
     for(int i = 0; i < nombre_joueurs; i++) {

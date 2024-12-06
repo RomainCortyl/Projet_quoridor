@@ -69,7 +69,6 @@ typedef struct {
 void afficher_plateau(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs);
 void afficher_titre();
 void initialiser_plateau(etatJeu *jeu);                                         //affichage.c
-void afficher_scores(Joueur joueurs[], int nombre_joueurs);
 int lettre_vers_indice(char lettre);
 char indice_vers_lettre(int indice);                                  //conversion.c
 void quitter_jeu(etatJeu *jeu, Joueur joueurs[], int nombre_joueurs, Joueur *joueur);
@@ -87,10 +86,8 @@ void placer_barriere_aux(etatJeu *jeu, int x[], int y[]);
 void retirer_barriere(etatJeu *jeu, int x[], int y[]);       //barriere.c
 int a_gagne(Joueur *joueur);
 int tour_joueur(etatJeu *jeu, Joueur *joueur, Joueur joueurs[], int nombre_joueurs);
-void appliquer_penalite(Joueur joueurs[], int nombre_joueurs);
 void entrer_pseudos(Joueur joueurs[], int nombre_joueurs);
 void choisir_pions(Joueur joueurs[], int nombre_joueurs);
 int demander_nombre_joueurs();                                  //joueur.c
-int lancer_timer(clock_t debut_temps);
 
 #endif //QORIDORV1_HEADER_H
